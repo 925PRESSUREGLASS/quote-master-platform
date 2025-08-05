@@ -1,0 +1,54 @@
+# Development Dockerfile with hot reload and debugging support
+
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    git \
+    build-essential \
+    libpq-dev \
+    ffmpeg \
+    inotify-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set work directory
+WORKDIR /app
+
+# Copy Python dependencies
+COPY requirements.txt .
+COPY requirements-dev.txt .
+
+# Install Python dependencies including dev dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install -r requirements-dev.txt
+
+# Install development tools
+RUN pip install \
+    watchdog \
+    debugpy \
+    ipdb
+
+# Copy source code
+COPY src/ ./src/
+COPY alembic/ ./alembic/
+COPY alembic.ini .
+COPY pyproject.toml .
+
+# Create necessary directories
+RUN mkdir -p /app/uploads /app/logs /app/data
+
+# Expose ports
+EXPOSE 8000 5678
+
+# Default command (can be overridden)
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

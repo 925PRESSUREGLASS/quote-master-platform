@@ -1,0 +1,105 @@
+version: '3.8'
+
+# Development override for docker-compose.yml
+services:
+  # Development database with exposed port
+  db:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: quote_master_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+
+  # Development Redis with exposed port  
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  # Development API with hot reload
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./src:/app/src:ro
+      - ./alembic:/app/alembic:ro
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    environment:
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      RELOAD: "true"
+      DATABASE_URL: postgresql://dev_user:dev_password@db:5432/quote_master_dev
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Debugger port
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Development worker with auto-reload
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./src:/app/src:ro
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    environment:
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      DATABASE_URL: postgresql://dev_user:dev_password@db:5432/quote_master_dev
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    command: watchmedo auto-restart --directory=./src --pattern="*.py" --recursive -- celery -A src.workers.celery_app worker --loglevel=debug
+
+  # Development frontend (if running separately)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000
+    command: npm run dev
+    profiles:
+      - frontend-dev
+
+  # Development tools
+  adminer:
+    image: adminer:latest
+    container_name: quote-master-adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - quote-master-network
+    profiles:
+      - dev-tools
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: quote-master-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - quote-master-network
+    profiles:
+      - dev-tools
+
+volumes:
+  app_uploads:
+  app_logs:

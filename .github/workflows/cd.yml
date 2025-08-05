@@ -1,0 +1,253 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  release:
+    types: [ published ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ==========================================
+  # Build and Push Docker Images
+  # ==========================================
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # ==========================================
+  # Deploy to Staging
+  # ==========================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.quotemaster.pro
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add staging deployment commands here
+        # This could be:
+        # - SSH to staging server and pull new images
+        # - Update Kubernetes deployment
+        # - Deploy to cloud provider (AWS, GCP, Azure)
+        # - Use deployment tools like Ansible, Terraform
+    
+    - name: Run staging smoke tests
+      run: |
+        echo "Running smoke tests on staging..."
+        # Add smoke test commands here
+        curl -f https://staging.quotemaster.pro/health || exit 1
+
+    - name: Notify staging deployment
+      run: |
+        echo "Staging deployment completed successfully"
+        # Add notification logic
+
+  # ==========================================
+  # Deploy to Production
+  # ==========================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+      url: https://quotemaster.pro
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+        echo "Digest: ${{ needs.build-and-push.outputs.image-digest }}"
+        # Add production deployment commands here
+
+    - name: Run production smoke tests
+      run: |
+        echo "Running smoke tests on production..."
+        curl -f https://quotemaster.pro/health || exit 1
+
+    - name: Notify production deployment
+      run: |
+        echo "Production deployment completed successfully"
+        # Add notification logic
+
+  # ==========================================
+  # Database Migration
+  # ==========================================
+  migrate-database:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Run database migrations
+      run: |
+        echo "Running database migrations..."
+        # Add migration commands here
+        # This should be done carefully with proper backup and rollback procedures
+
+  # ==========================================
+  # Security Scan of Deployed Images
+  # ==========================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    
+    steps:
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ needs.build-and-push.outputs.image-tag }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # ==========================================
+  # Update Documentation
+  # ==========================================
+  update-docs:
+    name: Update Documentation
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update API documentation
+      run: |
+        echo "Updating API documentation..."
+        # Generate and deploy API docs
+
+    - name: Update deployment documentation
+      run: |
+        echo "Updating deployment documentation..."
+        # Update deployment docs with new version info
+
+  # ==========================================
+  # Performance Monitoring
+  # ==========================================
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Run performance tests on production
+      run: |
+        echo "Running performance tests on production..."
+        # Add performance monitoring commands
+        # This could integrate with tools like:
+        # - Lighthouse for frontend performance
+        # - Artillery or K6 for load testing
+        # - APM tools like New Relic, DataDog
+
+  # ==========================================
+  # Rollback (Manual Trigger)
+  # ==========================================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment:
+      name: production
+    
+    steps:
+    - name: Rollback to previous version
+      run: |
+        echo "Rolling back to previous version..."
+        # Add rollback commands here
+        # This should restore the previous working version
+
+    - name: Notify rollback
+      run: |
+        echo "Rollback completed"
+        # Add notification logic
+
+  # ==========================================
+  # Cleanup
+  # ==========================================
+  cleanup:
+    name: Cleanup Old Images
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+    
+    steps:
+    - name: Delete old container images
+      run: |
+        echo "Cleaning up old container images..."
+        # Add cleanup logic to remove old images
+        # Keep last N versions for rollback purposes

@@ -1,0 +1,363 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - pre-release
+          - hotfix
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ==========================================
+  # Validate Release
+  # ==========================================
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Determine version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+          IS_PRERELEASE="${{ github.event.inputs.release_type != 'release' }}"
+        elif [ "${{ github.event_name }}" = "push" ]; then
+          VERSION="${GITHUB_REF#refs/tags/}"
+          IS_PRERELEASE="false"
+        else
+          VERSION="${{ github.event.release.tag_name }}"
+          IS_PRERELEASE="${{ github.event.release.prerelease }}"
+        fi
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+        echo "Release version: $VERSION"
+        echo "Is prerelease: $IS_PRERELEASE"
+
+    - name: Validate version format
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+          echo "Invalid version format: $VERSION"
+          echo "Expected format: vX.Y.Z or vX.Y.Z-suffix"
+          exit 1
+        fi
+
+    - name: Check if tag exists
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "Tag $VERSION already exists"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            exit 1
+          fi
+        fi
+
+    - name: Validate changelog
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if [ -f CHANGELOG.md ]; then
+          if ! grep -q "$VERSION" CHANGELOG.md; then
+            echo "Version $VERSION not found in CHANGELOG.md"
+            echo "Please update the changelog before releasing"
+            exit 1
+          fi
+        fi
+
+  # ==========================================
+  # Run Tests Before Release
+  # ==========================================
+  pre-release-tests:
+    name: Pre-Release Tests
+    uses: ./.github/workflows/ci.yml
+    needs: validate-release
+
+  # ==========================================
+  # Build Release Assets
+  # ==========================================
+  build-release:
+    name: Build Release Assets
+    runs-on: ubuntu-latest
+    needs: [validate-release, pre-release-tests]
+    outputs:
+      frontend-artifact: ${{ steps.build.outputs.frontend-artifact }}
+      backend-artifact: ${{ steps.build.outputs.backend-artifact }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+
+    - name: Build backend package
+      run: |
+        pip install build
+        python -m build
+
+    - name: Create release artifacts
+      id: build
+      run: |
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        
+        # Create frontend distribution
+        cd frontend
+        tar -czf "../quote-master-pro-frontend-${VERSION}.tar.gz" dist/
+        cd ..
+        
+        # Create backend distribution
+        tar -czf "quote-master-pro-backend-${VERSION}.tar.gz" \
+          --exclude='.git*' \
+          --exclude='node_modules' \
+          --exclude='frontend/dist' \
+          --exclude='frontend/node_modules' \
+          --exclude='__pycache__' \
+          --exclude='*.pyc' \
+          src/ requirements*.txt alembic/ alembic.ini pyproject.toml Dockerfile* docker-compose*.yml
+        
+        # Create source code archive
+        git archive --format=tar.gz --prefix=quote-master-pro-${VERSION}/ HEAD > "quote-master-pro-source-${VERSION}.tar.gz"
+        
+        echo "frontend-artifact=quote-master-pro-frontend-${VERSION}.tar.gz" >> $GITHUB_OUTPUT
+        echo "backend-artifact=quote-master-pro-backend-${VERSION}.tar.gz" >> $GITHUB_OUTPUT
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-artifacts
+        path: |
+          quote-master-pro-*.tar.gz
+          dist/
+
+  # ==========================================
+  # Build and Push Container Images
+  # ==========================================
+  build-container:
+    name: Build Container Images
+    runs-on: ubuntu-latest
+    needs: [validate-release, pre-release-tests]
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=semver,pattern={{version}},value=${{ needs.validate-release.outputs.version }}
+          type=semver,pattern={{major}}.{{minor}},value=${{ needs.validate-release.outputs.version }}
+          type=semver,pattern={{major}},value=${{ needs.validate-release.outputs.version }}
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # ==========================================
+  # Generate Release Notes
+  # ==========================================
+  generate-release-notes:
+    name: Generate Release Notes
+    runs-on: ubuntu-latest
+    needs: validate-release
+    outputs:
+      release-notes: ${{ steps.notes.outputs.release-notes }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate release notes
+      id: notes
+      run: |
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        
+        # Get the previous tag
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
+        
+        # Generate changelog
+        echo "# Release Notes for $VERSION" > release-notes.md
+        echo "" >> release-notes.md
+        
+        if [ -f CHANGELOG.md ]; then
+          # Extract version section from changelog
+          sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | head -n -1 >> release-notes.md
+        else
+          # Generate from commits
+          echo "## Changes" >> release-notes.md
+          git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD >> release-notes.md
+        fi
+        
+        echo "" >> release-notes.md
+        echo "## Docker Images" >> release-notes.md
+        echo "- \`ghcr.io/${{ github.repository }}:$VERSION\`" >> release-notes.md
+        echo "- \`ghcr.io/${{ github.repository }}:latest\`" >> release-notes.md
+        
+        # Set output (escape newlines)
+        RELEASE_NOTES=$(cat release-notes.md | sed ':a;N;$!ba;s/\n/\\n/g')
+        echo "release-notes=$RELEASE_NOTES" >> $GITHUB_OUTPUT
+
+    - name: Upload release notes
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-notes
+        path: release-notes.md
+
+  # ==========================================
+  # Create GitHub Release
+  # ==========================================
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-release, build-container, generate-release-notes]
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ needs.validate-release.outputs.version }}
+        name: Release ${{ needs.validate-release.outputs.version }}
+        body: ${{ needs.generate-release-notes.outputs.release-notes }}
+        draft: false
+        prerelease: ${{ needs.validate-release.outputs.is-prerelease }}
+        files: |
+          release-artifacts/*.tar.gz
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================
+  # Deploy Release
+  # ==========================================
+  deploy-release:
+    name: Deploy Release
+    uses: ./.github/workflows/cd.yml
+    needs: [create-release]
+    secrets: inherit
+
+  # ==========================================
+  # Post-Release Tasks
+  # ==========================================
+  post-release:
+    name: Post-Release Tasks
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release, deploy-release]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update version badges
+      run: |
+        echo "Updating version badges and documentation..."
+        # Update README badges
+        # Update documentation with new version
+
+    - name: Notify release
+      run: |
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        echo "Release $VERSION completed successfully!"
+        # Send notifications to:
+        # - Slack/Discord channels
+        # - Email lists
+        # - Update status pages
+
+    - name: Create follow-up issues
+      run: |
+        echo "Creating follow-up issues..."
+        # Create issues for:
+        # - Performance testing of the new release
+        # - Documentation updates
+        # - Next version planning
+
+  # ==========================================
+  # Security Scan of Release
+  # ==========================================
+  security-scan-release:
+    name: Security Scan Release
+    runs-on: ubuntu-latest
+    needs: [build-container]
+    
+    steps:
+    - name: Run security scan on release image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'ghcr.io/${{ github.repository }}:${{ needs.validate-release.outputs.version }}'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload security scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
