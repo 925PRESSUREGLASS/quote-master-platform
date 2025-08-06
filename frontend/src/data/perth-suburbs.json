@@ -1,0 +1,258 @@
+{
+  "suburbs": [
+    {
+      "name": "Fremantle",
+      "zone": "moderate",
+      "base_rate_multiplier": 1.15,
+      "postcode": "6160",
+      "region": "South Metropolitan"
+    },
+    {
+      "name": "Joondalup",
+      "zone": "outer",
+      "base_rate_multiplier": 1.2,
+      "postcode": "6027",
+      "region": "Northern Suburbs"
+    },
+    {
+      "name": "Midland",
+      "zone": "moderate",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6056",
+      "region": "Eastern Suburbs"
+    },
+    {
+      "name": "Rockingham",
+      "zone": "outer",
+      "base_rate_multiplier": 1.25,
+      "postcode": "6168",
+      "region": "Southern Suburbs"
+    },
+    {
+      "name": "Mandurah",
+      "zone": "outer",
+      "base_rate_multiplier": 1.4,
+      "postcode": "6210",
+      "region": "Peel Region"
+    },
+    {
+      "name": "Baldivis",
+      "zone": "outer",
+      "base_rate_multiplier": 1.3,
+      "postcode": "6171",
+      "region": "Southern Suburbs"
+    },
+    {
+      "name": "Ellenbrook",
+      "zone": "outer",
+      "base_rate_multiplier": 1.25,
+      "postcode": "6069",
+      "region": "Northern Suburbs"
+    },
+    {
+      "name": "Armadale",
+      "zone": "outer",
+      "base_rate_multiplier": 1.3,
+      "postcode": "6112",
+      "region": "South Eastern Suburbs"
+    },
+    {
+      "name": "Kalamunda",
+      "zone": "outer",
+      "base_rate_multiplier": 1.35,
+      "postcode": "6076",
+      "region": "Hills"
+    },
+    {
+      "name": "Mundaring",
+      "zone": "outer",
+      "base_rate_multiplier": 1.35,
+      "postcode": "6073",
+      "region": "Hills"
+    },
+    {
+      "name": "City Beach",
+      "zone": "premium",
+      "base_rate_multiplier": 1.3,
+      "postcode": "6015",
+      "region": "Western Suburbs"
+    },
+    {
+      "name": "Cottesloe",
+      "zone": "premium",
+      "base_rate_multiplier": 1.3,
+      "postcode": "6011",
+      "region": "Western Suburbs"
+    },
+    {
+      "name": "Dalkeith",
+      "zone": "premium",
+      "base_rate_multiplier": 1.3,
+      "postcode": "6009",
+      "region": "Western Suburbs"
+    },
+    {
+      "name": "Nedlands",
+      "zone": "premium",
+      "base_rate_multiplier": 1.2,
+      "postcode": "6009",
+      "region": "Western Suburbs"
+    },
+    {
+      "name": "Claremont",
+      "zone": "premium",
+      "base_rate_multiplier": 1.2,
+      "postcode": "6010",
+      "region": "Western Suburbs"
+    },
+    {
+      "name": "Subiaco",
+      "zone": "standard",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6008",
+      "region": "Western Suburbs"
+    },
+    {
+      "name": "Mount Lawley",
+      "zone": "standard",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6050",
+      "region": "Inner North"
+    },
+    {
+      "name": "Leederville",
+      "zone": "standard",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6007",
+      "region": "Inner North"
+    },
+    {
+      "name": "North Perth",
+      "zone": "standard",
+      "base_rate_multiplier": 1.0,
+      "postcode": "6006",
+      "region": "Inner North"
+    },
+    {
+      "name": "Victoria Park",
+      "zone": "standard",
+      "base_rate_multiplier": 1.0,
+      "postcode": "6100",
+      "region": "Inner South"
+    },
+    {
+      "name": "South Perth",
+      "zone": "standard",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6151",
+      "region": "Inner South"
+    },
+    {
+      "name": "Como",
+      "zone": "standard",
+      "base_rate_multiplier": 1.0,
+      "postcode": "6152",
+      "region": "Inner South"
+    },
+    {
+      "name": "Scarborough",
+      "zone": "moderate",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6019",
+      "region": "Coastal North"
+    },
+    {
+      "name": "Hillarys",
+      "zone": "moderate",
+      "base_rate_multiplier": 1.15,
+      "postcode": "6025",
+      "region": "Coastal North"
+    },
+    {
+      "name": "Joondalup",
+      "zone": "outer",
+      "base_rate_multiplier": 1.2,
+      "postcode": "6027",
+      "region": "Northern Suburbs"
+    },
+    {
+      "name": "Wanneroo",
+      "zone": "outer",
+      "base_rate_multiplier": 1.25,
+      "postcode": "6065",
+      "region": "Northern Suburbs"
+    },
+    {
+      "name": "Midland",
+      "zone": "outer",
+      "base_rate_multiplier": 1.2,
+      "postcode": "6056",
+      "region": "Eastern Suburbs"
+    },
+    {
+      "name": "Kalamunda",
+      "zone": "outer",
+      "base_rate_multiplier": 1.25,
+      "postcode": "6076",
+      "region": "Hills"
+    },
+    {
+      "name": "Fremantle",
+      "zone": "moderate",
+      "base_rate_multiplier": 1.1,
+      "postcode": "6160",
+      "region": "Southern Suburbs"
+    },
+    {
+      "name": "Cockburn",
+      "zone": "outer",
+      "base_rate_multiplier": 1.2,
+      "postcode": "6164",
+      "region": "Southern Suburbs"
+    },
+    {
+      "name": "Rockingham",
+      "zone": "outer",
+      "base_rate_multiplier": 1.3,
+      "postcode": "6168",
+      "region": "Southern Suburbs"
+    },
+    {
+      "name": "Mandurah",
+      "zone": "outer",
+      "base_rate_multiplier": 1.4,
+      "postcode": "6210",
+      "region": "Southern Suburbs"
+    }
+  ],
+  "zones": {
+    "premium": {
+      "name": "Premium",
+      "description": "High-end suburbs with premium rates",
+      "min_multiplier": 1.2,
+      "max_multiplier": 1.3,
+      "color": "text-red-600"
+    },
+    "standard": {
+      "name": "Standard",
+      "description": "Central suburbs with standard rates",
+      "min_multiplier": 1.0,
+      "max_multiplier": 1.1,
+      "color": "text-green-600"
+    },
+    "moderate": {
+      "name": "Moderate",
+      "description": "Mid-range suburbs with moderate travel time",
+      "min_multiplier": 1.1,
+      "max_multiplier": 1.15,
+      "color": "text-yellow-600"
+    },
+    "outer": {
+      "name": "Outer",
+      "description": "Outer suburbs with higher travel costs",
+      "min_multiplier": 1.2,
+      "max_multiplier": 1.4,
+      "color": "text-red-600"
+    }
+  }
+}

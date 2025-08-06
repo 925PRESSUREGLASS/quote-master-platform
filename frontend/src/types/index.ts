@@ -383,3 +383,126 @@ export interface UserSettings {
     voice_auto_process: boolean;
   };
 }
+
+// Service Quote Types (Window/Pressure Cleaning)
+export interface ServiceQuote extends BaseEntity {
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string;
+  customer_address: string;
+  suburb: string;
+  service_type: ServiceType;
+  property_type: PropertyType;
+  square_meters: number;
+  stories: number;
+  difficulty_multiplier: number;
+  frequency: ServiceFrequency;
+  base_price: number;
+  total_price: number;
+  zone_multiplier: number;
+  frequency_discount: number;
+  special_requirements?: string;
+  notes?: string;
+  status: ServiceQuoteStatus;
+  valid_until: string;
+  ai_confidence?: number;
+  voice_recording_id?: string;
+  pricing_breakdown: PricingBreakdown;
+  estimated_duration: number;
+  contact_preference: ContactPreference;
+  preferred_contact_time?: string;
+  quote_source: QuoteSource;
+}
+
+export enum ServiceType {
+  WINDOW_CLEANING = 'window_cleaning',
+  PRESSURE_CLEANING = 'pressure_cleaning',
+  BOTH = 'both'
+}
+
+export enum PropertyType {
+  HOUSE = 'house',
+  APARTMENT = 'apartment',
+  COMMERCIAL = 'commercial',
+  TOWNHOUSE = 'townhouse'
+}
+
+export enum ServiceFrequency {
+  ONE_TIME = 'one_time',
+  WEEKLY = 'weekly',
+  FORTNIGHTLY = 'fortnightly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly'
+}
+
+export enum ServiceQuoteStatus {
+  DRAFT = 'draft',
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  EXPIRED = 'expired'
+}
+
+export enum ContactPreference {
+  EMAIL = 'email',
+  PHONE = 'phone',
+  SMS = 'sms'
+}
+
+export enum QuoteSource {
+  MANUAL = 'manual',
+  VOICE = 'voice',
+  API = 'api'
+}
+
+export interface PricingBreakdown {
+  base_rate: number;
+  area_cost: number;
+  story_multiplier: number;
+  difficulty_adjustment: number;
+  zone_adjustment: number;
+  frequency_discount: number;
+  total_before_discount: number;
+  discount_amount: number;
+  final_total: number;
+}
+
+export interface ServiceQuoteRequest {
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string;
+  customer_address: string;
+  suburb: string;
+  service_type: ServiceType;
+  property_type: PropertyType;
+  square_meters: number;
+  stories: number;
+  difficulty_multiplier?: number;
+  frequency: ServiceFrequency;
+  special_requirements?: string;
+  notes?: string;
+  contact_preference: ContactPreference;
+  preferred_contact_time?: string;
+}
+
+export interface ServiceQuoteCalculation {
+  service_type: ServiceType;
+  property_type: PropertyType;
+  square_meters: number;
+  stories: number;
+  suburb: string;
+  frequency: ServiceFrequency;
+  difficulty_multiplier?: number;
+}
+
+export interface SuburbInfo {
+  name: string;
+  zone: string;
+  base_rate_multiplier: number;
+}
+
+// Voice to Service Quote
+export interface VoiceServiceQuoteRequest {
+  audio_file: File;
+  additional_data?: Partial<ServiceQuoteRequest>;
+}

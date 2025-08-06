@@ -1,5 +1,5 @@
-import React from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { QuoteManagementPage } from '@/pages/quotes/QuoteManagementPage'
 
 function App() {
   return (
@@ -28,14 +28,21 @@ function App() {
                   📊 Real-time Analytics & Monitoring
                 </p>
               </div>
-              <div className="mt-8">
+              <div className="mt-8 space-x-4">
                 <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
                   Get Started
                 </button>
+                <a 
+                  href="/quotes"
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors inline-block"
+                >
+                  Service Quotes
+                </a>
               </div>
             </div>
           </div>
         } />
+        <Route path="/quotes" element={<QuoteManagementPage />} />
       </Routes>
     </div>
   )
