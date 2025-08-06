@@ -1,29 +1,28 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import App from './App';
-import { AuthProvider } from '@/store/AuthContext';
-import { ThemeProvider } from '@/store/ThemeContext';
-import { AnalyticsProvider } from '@/store/AnalyticsContext';
-
-import './index.css';
+import App from './App.tsx'
+import { AuthProvider } from './store/AuthContext.tsx'
+import { ThemeProvider } from './store/ThemeContext.tsx'
+import { AnalyticsProvider } from './store/AnalyticsContext.tsx'
+import './index.css'
 
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-    mutations: {
-      retry: 1,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 10, // 10 minutes
+      retry: (failureCount, error: any) => {
+        if (error?.status === 404) return false
+        return failureCount < 3
+      },
     },
   },
-});
+})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -39,5 +38,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </ThemeProvider>
       </QueryClientProvider>
     </BrowserRouter>
-  </React.StrictMode>
-);
+  </React.StrictMode>,
+)

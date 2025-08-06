@@ -1,5 +1,2 @@
-"""Quote Master Pro - AI-powered quote generation platform."""
-
+"""Quote Master Pro - AI-Powered Quote Generation Platform"""
 __version__ = "1.0.0"
-__author__ = "Quote Master Pro Team"
-__email__ = "team@quotemasterpro.com"

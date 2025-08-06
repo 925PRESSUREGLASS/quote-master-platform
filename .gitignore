@@ -90,9 +90,6 @@ Pipfile.lock
 poetry.lock
 
 # pdm
-.pdm.toml
-
-# PEP 582
 __pypackages__/
 
 # Celery stuff
@@ -135,7 +132,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -151,7 +148,18 @@ cython_debug/
 ehthumbs.db
 Thumbs.db
 
-# Logs
+# Node modules (for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build
+frontend/dist/
+frontend/build/
+
+# Uploads and logs
+uploads/
 logs/
 *.log
 
@@ -159,60 +167,6 @@ logs/
 *.db
 *.sqlite3
 
-# Audio files (temporary)
-temp_audio/
-uploads/audio/
-
-# Model files
-models/
-*.pkl
-*.joblib
-
-# Secrets and keys
-*.pem
-*.key
-secrets/
-
-# Docker
-.dockerignore
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-.terraform.lock.hcl
-
-# Kubernetes secrets
-*secret*.yaml
-*secret*.yml
-
-# Local development
-.local/
-local/
-
 # Temporary files
-tmp/
-temp/
 *.tmp
-
-# Backup files
-*.bak
-*.backup
-
-# Node modules (for frontend)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Production builds
-/build
-/dist
-
-# Monitoring data
-prometheus_data/
-grafana_data/
-
-# Certificate files
-*.crt
-*.csr
+*.temp

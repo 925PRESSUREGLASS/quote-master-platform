@@ -1,14 +1,7 @@
-"""AI services for Quote Master Pro."""
+"""AI services package for Quote Master Pro"""
 
-from .base import AIServiceBase, AIResponse
-from .openai import OpenAIService
-from .claude import ClaudeService
-from .orchestrator import AIOrchestrator
+from src.services.ai.openai_service import OpenAIService
+from src.services.ai.claude_service import ClaudeService
+from src.services.ai.orchestrator import AIOrchestrator
 
-__all__ = [
-    "AIServiceBase",
-    "AIResponse", 
-    "OpenAIService",
-    "ClaudeService",
-    "AIOrchestrator",
-]
+__all__ = ["OpenAIService", "ClaudeService", "AIOrchestrator"]

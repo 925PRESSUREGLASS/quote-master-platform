@@ -1,66 +1,49 @@
 #!/bin/bash
+# Quote Master Pro - Production Start Script
 
-# Quote Master Pro - Startup Script
+echo "🚀 Starting Quote Master Pro in Production Mode..."
 
-set -e
-
-echo "🚀 Starting Quote Master Pro..."
-
-# Load environment variables
-if [ -f .env ]; then
-    echo "📋 Loading environment variables..."
-    export $(grep -v '^#' .env | xargs)
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "❌ Docker is not installed. Please install Docker first."
+    exit 1
 fi
 
-# Function to check if service is ready
-wait_for_service() {
-    local service=$1
-    local host=$2
-    local port=$3
-    local timeout=${4:-60}
-    
-    echo "⏳ Waiting for $service to be ready..."
-    
-    for i in $(seq 1 $timeout); do
-        if nc -z $host $port 2>/dev/null; then
-            echo "✅ $service is ready!"
-            return 0
-        fi
-        sleep 1
-    done
-    
-    echo "❌ $service failed to start within $timeout seconds"
-    return 1
-}
+# Check if Docker Compose is installed
+if ! command -v docker-compose &> /dev/null; then
+    echo "❌ Docker Compose is not installed. Please install Docker Compose first."
+    exit 1
+fi
 
-# Start infrastructure services
-echo "🔧 Starting infrastructure services..."
-docker-compose up -d db redis
+# Create necessary directories
+echo "📁 Creating directories..."
+mkdir -p uploads logs
 
-# Wait for database
-wait_for_service "PostgreSQL" localhost 5432
+# Copy environment file if it doesn't exist
+if [ ! -f .env ]; then
+    echo "📝 Creating .env file from template..."
+    cp .env.example .env
+    echo "⚠️  Please edit .env file with your API keys and configuration"
+fi
 
-# Wait for Redis
-wait_for_service "Redis" localhost 6379
+# Build and start services
+echo "🏗️  Building and starting services..."
+docker-compose up --build -d
 
-# Run database migrations
-echo "🗄️  Running database migrations..."
-docker-compose run --rm api alembic upgrade head
+# Wait for services to be ready
+echo "⏳ Waiting for services to start..."
+sleep 10
 
-# Start application services
-echo "🚀 Starting application services..."
-docker-compose up -d
-
-# Wait for API to be ready
-wait_for_service "API" localhost 8000
-
-echo "✨ Quote Master Pro is ready!"
-echo "🌐 API: http://localhost:8000"
-echo "📊 Grafana: http://localhost:3001 (admin/admin)"
-echo "📈 Prometheus: http://localhost:9090"
-echo "🗄️  Adminer: http://localhost:8080"
-
-# Show service status
-echo ""
-echo "📋 Service Status:"
+# Check service health
+echo "🔍 Checking service health..."
 docker-compose ps
+
+echo "✅ Quote Master Pro is running!"
+echo "🌐 Frontend: http://localhost:3000"
+echo "🔧 Backend API: http://localhost:8000"
+echo "📊 API Docs: http://localhost:8000/docs"
+echo "📈 Grafana: http://localhost:3001 (admin/admin)"
+echo "🔍 Prometheus: http://localhost:9090"
+
+echo ""
+echo "To stop the application, run: ./scripts/stop.sh"

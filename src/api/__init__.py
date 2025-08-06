@@ -1,1 +1,1 @@
-"""FastAPI application and routers for Quote Master Pro."""
+"""API package for Quote Master Pro"""

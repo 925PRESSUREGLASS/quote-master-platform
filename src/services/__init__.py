@@ -1,1 +1,1 @@
-"""Services package for Quote Master Pro."""
+"""Services package for Quote Master Pro"""
