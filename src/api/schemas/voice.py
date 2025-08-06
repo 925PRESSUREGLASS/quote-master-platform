@@ -85,7 +85,7 @@ class VoiceProcessingJobCreate(VoiceProcessingJobBase):
     """Voice processing job creation schema."""
     recording_id: UUID
     priority: int = Field(5, ge=1, le=10)
-    model_config: Optional[Dict[str, Any]] = None
+    processing_config: Optional[Dict[str, Any]] = None
 
 
 class VoiceProcessingJobUpdate(BaseModel):
@@ -104,7 +104,7 @@ class VoiceProcessingJobResponse(VoiceProcessingJobBase):
     recording_id: UUID
     status: VoiceProcessingStatus
     priority: int
-    model_config: Optional[Dict[str, Any]]
+    processing_config: Optional[Dict[str, Any]]
     progress_percent: float
     current_step: Optional[str]
     steps_total: Optional[int]
@@ -137,7 +137,7 @@ class VoiceProcessingJobResponse(VoiceProcessingJobBase):
 class VoiceProcessRequest(BaseModel):
     """Voice processing request schema."""
     recording_id: UUID
-    job_types: List[str] = Field(..., min_items=1)
+    job_types: List[str] = Field(..., min_length=1)
     parameters: Optional[Dict[str, Any]] = None
     priority: int = Field(5, ge=1, le=10)
     
@@ -156,7 +156,7 @@ class VoiceTranscriptionRequest(BaseModel):
     model: Optional[str] = None
     language: Optional[str] = None
     prompt: Optional[str] = None
-    response_format: str = Field("json", regex="^(json|text|srt|verbose_json|vtt)$")
+    response_format: str = Field("json", pattern="^(json|text|srt|verbose_json|vtt)$")
     temperature: Optional[float] = Field(None, ge=0.0, le=1.0)
 
 
@@ -174,7 +174,7 @@ class VoiceToQuoteRequest(BaseModel):
     """Voice to quote conversion request schema."""
     recording_id: UUID
     style: Optional[str] = None
-    length: Optional[str] = Field(None, regex="^(short|medium|long)$")
+    length: Optional[str] = Field(None, pattern="^(short|medium|long)$")
     tone: Optional[str] = None
     include_psychology: bool = True
     ai_model: Optional[str] = None
@@ -241,8 +241,8 @@ class VoiceSearchRequest(BaseModel):
     max_duration: Optional[float] = None
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
-    sort_by: Optional[str] = Field(None, regex="^(created_at|duration|quality_score)$")
-    sort_order: Optional[str] = Field(None, regex="^(asc|desc)$")
+    sort_by: Optional[str] = Field(None, pattern="^(created_at|duration|quality_score)$")
+    sort_order: Optional[str] = Field(None, pattern="^(asc|desc)$")
     limit: int = Field(20, ge=1, le=100)
     offset: int = Field(0, ge=0)
 

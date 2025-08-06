@@ -11,6 +11,7 @@ import traceback
 from celery import Celery
 from celery.result import AsyncResult
 
+from src.workers.celery_app import celery_app
 from src.core.config import get_settings
 from src.core.database import get_db_session
 from src.services.analytics.tracker import get_analytics_tracker

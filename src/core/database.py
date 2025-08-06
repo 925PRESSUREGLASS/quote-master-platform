@@ -3,10 +3,11 @@
 from typing import Generator, Optional
 import logging
 
-from sqlalchemy import create_engine, MetaData, event
+from sqlalchemy import create_engine, MetaData, event, text, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import Pool
+from sqlalchemy.exc import DisconnectionError
 
 from .config import get_settings
 
@@ -17,13 +18,22 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 # Database engine
-engine = create_engine(
-    settings.database_url,
-    pool_size=settings.db_pool_size,
-    pool_overflow=settings.db_pool_overflow,
-    echo=settings.debug and settings.is_development,
-    pool_pre_ping=True,  # Verify connections before use
-)
+if settings.database_url.startswith("sqlite"):
+    # SQLite configuration
+    engine = create_engine(
+        settings.database_url,
+        echo=settings.debug,
+        pool_pre_ping=True,  # Verify connections before use
+    )
+else:
+    # PostgreSQL/other database configuration
+    engine = create_engine(
+        settings.database_url,
+        pool_size=settings.db_pool_size,
+        pool_overflow=settings.db_pool_overflow,
+        echo=settings.debug,
+        pool_pre_ping=True,  # Verify connections before use
+    )
 
 # Session factory
 SessionLocal = sessionmaker(
@@ -61,10 +71,10 @@ def init_db() -> None:
     """Initialize database tables."""
     try:
         # Import all models to register them
-        from src.api.models import *  # noqa
+        import src.models  # noqa - import models to register them
         
-        # Create tables
-        Base.metadata.create_all(bind=engine)
+        # Create tables only if they don't exist
+        Base.metadata.create_all(bind=engine, checkfirst=True)
         logger.info("Database tables created successfully")
         
     except Exception as e:
@@ -76,7 +86,7 @@ def check_db_health() -> bool:
     """Check database connection health."""
     try:
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
@@ -174,10 +184,10 @@ class DatabaseUtils:
     """Database utility functions."""
     
     @staticmethod
-    def execute_raw_sql(query: str, params: dict = None) -> list:
+    def execute_raw_sql(query: str, params: Optional[dict] = None):
         """Execute raw SQL query."""
         with engine.connect() as connection:
-            result = connection.execute(query, params or {})
+            result = connection.execute(text(query), params or {})
             return result.fetchall()
     
     @staticmethod

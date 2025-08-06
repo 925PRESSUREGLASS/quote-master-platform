@@ -104,8 +104,8 @@ async def admin_list_users(
     status: Optional[UserStatus] = Query(None),
     is_verified: Optional[bool] = Query(None),
     is_active: Optional[bool] = Query(None),
-    sort_by: str = Query("created_at", regex="^(created_at|last_login_at|email|username)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("created_at", pattern="^(created_at|last_login_at|email|username)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
@@ -233,7 +233,7 @@ async def admin_list_quotes(
     search: Optional[str] = Query(None),
     user_id: Optional[str] = Query(None),
     sort_by: str = Query("created_at"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
@@ -278,7 +278,7 @@ async def admin_list_quotes(
 @router.put("/quotes/{quote_id}/moderate")
 async def moderate_quote(
     quote_id: str,
-    action: str = Query(..., regex="^(approve|reject|feature|unfeature)$"),
+    action: str = Query(..., pattern="^(approve|reject|feature|unfeature)$"),
     notes: Optional[str] = None,
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
@@ -459,7 +459,7 @@ async def admin_delete_category(
 @router.post("/maintenance/cleanup")
 async def run_cleanup(
     background_tasks: BackgroundTasks,
-    cleanup_type: str = Query(..., regex="^(temp_files|old_sessions|failed_jobs|deleted_users)$"),
+    cleanup_type: str = Query(..., pattern="^(temp_files|old_sessions|failed_jobs|deleted_users)$"),
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):

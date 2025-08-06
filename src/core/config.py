@@ -4,124 +4,119 @@ import os
 from typing import List, Optional
 from functools import lru_cache
 
-from pydantic import BaseSettings, Field, validator
+from pydantic import Field, validator
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Application settings."""
     
     # Application
-    app_name: str = Field(default="Quote Master Pro", env="APP_NAME")
-    app_version: str = Field(default="1.0.0", env="APP_VERSION")
-    environment: str = Field(default="development", env="ENVIRONMENT")
-    debug: bool = Field(default=True, env="DEBUG")
-    secret_key: str = Field(..., env="SECRET_KEY")
+    app_name: str = "Quote Master Pro"
+    app_version: str = "1.0.0"
+    environment: str = "development"
+    debug: bool = True
+    secret_key: str = "your-secret-key-here"
     
     # Server
-    host: str = Field(default="0.0.0.0", env="HOST")
-    port: int = Field(default=8000, env="PORT")
-    workers: int = Field(default=4, env="WORKERS")
+    host: str = "0.0.0.0"
+    port: int = 8000
+    workers: int = 4
     
     # Database
-    database_url: str = Field(..., env="DATABASE_URL")
-    db_host: str = Field(default="localhost", env="DB_HOST")
-    db_port: int = Field(default=5432, env="DB_PORT")
-    db_name: str = Field(default="quote_master_pro", env="DB_NAME")
-    db_user: str = Field(default="username", env="DB_USER")
-    db_password: str = Field(default="password", env="DB_PASSWORD")
-    db_pool_size: int = Field(default=20, env="DB_POOL_SIZE")
-    db_pool_overflow: int = Field(default=0, env="DB_POOL_OVERFLOW")
+    database_url: str = "sqlite:///./quote_master_pro.db"
+    db_host: str = "localhost"
+    db_port: int = 5432
+    db_name: str = "quote_master_pro"
+    db_user: str = "username"
+    db_password: str = "password"
+    db_pool_size: int = 20
+    db_pool_overflow: int = 0
     
     # Redis
-    redis_url: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
-    redis_host: str = Field(default="localhost", env="REDIS_HOST")
-    redis_port: int = Field(default=6379, env="REDIS_PORT")
-    redis_db: int = Field(default=0, env="REDIS_DB")
-    redis_password: Optional[str] = Field(default=None, env="REDIS_PASSWORD")
+    redis_url: str = "redis://localhost:6379/0"
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: Optional[str] = None
     
     # Celery
-    celery_broker_url: str = Field(default="redis://localhost:6379/1", env="CELERY_BROKER_URL")
-    celery_result_backend: str = Field(default="redis://localhost:6379/2", env="CELERY_RESULT_BACKEND")
+    celery_broker_url: str = "redis://localhost:6379/1"
+    celery_result_backend: str = "redis://localhost:6379/2"
     
     # AI Services
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4-turbo-preview", env="OPENAI_MODEL")
-    openai_max_tokens: int = Field(default=4000, env="OPENAI_MAX_TOKENS")
-    openai_temperature: float = Field(default=0.7, env="OPENAI_TEMPERATURE")
+    openai_api_key: str = "your-openai-api-key"
+    openai_model: str = "gpt-4-turbo-preview"
+    openai_max_tokens: int = 4000
+    openai_temperature: float = 0.7
     
-    anthropic_api_key: str = Field(..., env="ANTHROPIC_API_KEY")
-    anthropic_model: str = Field(default="claude-3-sonnet-20240229", env="ANTHROPIC_MODEL")
-    anthropic_max_tokens: int = Field(default=4000, env="ANTHROPIC_MAX_TOKENS")
+    anthropic_api_key: str = "your-anthropic-api-key"
+    anthropic_model: str = "claude-3-sonnet-20240229"
+    anthropic_max_tokens: int = 4000
     
     # Voice Recognition
-    whisper_model: str = Field(default="base", env="WHISPER_MODEL")
-    speech_recognition_timeout: int = Field(default=5, env="SPEECH_RECOGNITION_TIMEOUT")
-    audio_sample_rate: int = Field(default=16000, env="AUDIO_SAMPLE_RATE")
+    whisper_model: str = "base"
+    speech_recognition_timeout: int = 5
+    audio_sample_rate: int = 16000
     
     # Security
-    access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
-    refresh_token_expire_days: int = Field(default=7, env="REFRESH_TOKEN_EXPIRE_DAYS")
-    algorithm: str = Field(default="HS256", env="ALGORITHM")
-    bcrypt_rounds: int = Field(default=12, env="BCRYPT_ROUNDS")
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+    algorithm: str = "HS256"
+    bcrypt_rounds: int = 12
     
     # CORS
-    allowed_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:8080"],
-        env="ALLOWED_ORIGINS"
-    )
-    allowed_methods: List[str] = Field(
-        default=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        env="ALLOWED_METHODS"
-    )
-    allowed_headers: List[str] = Field(default=["*"], env="ALLOWED_HEADERS")
+    allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    allowed_methods: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed_headers: List[str] = ["*"]
     
     # Rate Limiting
-    rate_limit_requests: int = Field(default=100, env="RATE_LIMIT_REQUESTS")
-    rate_limit_window: int = Field(default=60, env="RATE_LIMIT_WINDOW")
+    rate_limit_requests: int = 100
+    rate_limit_window: int = 60
     
     # File Upload
-    max_file_size: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB
-    allowed_file_types: List[str] = Field(
-        default=["audio/wav", "audio/mp3", "audio/mpeg", "audio/ogg"],
-        env="ALLOWED_FILE_TYPES"
-    )
+    max_file_size: int = 10485760  # 10MB
+    allowed_file_types: List[str] = ["audio/wav", "audio/mp3", "audio/mpeg", "audio/ogg"]
     
     # Monitoring
-    prometheus_port: int = Field(default=8001, env="PROMETHEUS_PORT")
-    sentry_dsn: Optional[str] = Field(default=None, env="SENTRY_DSN")
-    new_relic_license_key: Optional[str] = Field(default=None, env="NEW_RELIC_LICENSE_KEY")
+    prometheus_port: int = 8001
+    sentry_dsn: Optional[str] = None
+    new_relic_license_key: Optional[str] = None
     
     # Logging
-    log_level: str = Field(default="INFO", env="LOG_LEVEL")
-    log_format: str = Field(default="json", env="LOG_FORMAT")
-    log_file: str = Field(default="logs/app.log", env="LOG_FILE")
+    log_level: str = "INFO"
+    log_format: str = "json"
+    log_file: str = "logs/app.log"
     
     # Cache
-    cache_ttl: int = Field(default=3600, env="CACHE_TTL")
-    cache_prefix: str = Field(default="quote_master_pro", env="CACHE_PREFIX")
+    cache_ttl: int = 3600
+    cache_prefix: str = "quote_master_pro"
     
     # Email
-    email_host: str = Field(default="smtp.gmail.com", env="EMAIL_HOST")
-    email_port: int = Field(default=587, env="EMAIL_PORT")
-    email_user: str = Field(default="your-email@gmail.com", env="EMAIL_USER")
-    email_password: str = Field(default="your-app-password", env="EMAIL_PASSWORD")
-    email_from: str = Field(
-        default="Quote Master Pro <noreply@quotemasterpro.com>",
-        env="EMAIL_FROM"
-    )
+    email_host: str = "smtp.gmail.com"
+    email_port: int = 587
+    email_user: str = "your-email@gmail.com"
+    email_password: str = "your-app-password"
+    email_from: str = "Quote Master Pro <noreply@quotemasterpro.com>"
     
     # Frontend
-    frontend_url: str = Field(default="http://localhost:3000", env="FRONTEND_URL")
+    frontend_url: str = "http://localhost:3000"
     
     # Analytics
-    analytics_enabled: bool = Field(default=True, env="ANALYTICS_ENABLED")
-    analytics_retention_days: int = Field(default=90, env="ANALYTICS_RETENTION_DAYS")
+    analytics_enabled: bool = True
+    analytics_retention_days: int = 90
     
     # Feature Flags
-    enable_voice_recognition: bool = Field(default=True, env="ENABLE_VOICE_RECOGNITION")
-    enable_ai_psychology: bool = Field(default=True, env="ENABLE_AI_PSYCHOLOGY")
-    enable_analytics: bool = Field(default=True, env="ENABLE_ANALYTICS")
-    enable_caching: bool = Field(default=True, env="ENABLE_CACHING")
+    enable_voice_recognition: bool = True
+    enable_ai_psychology: bool = True
+    enable_analytics: bool = True
+    enable_caching: bool = True
+    
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False
+    }
     
     @validator("environment")
     def validate_environment(cls, v):
@@ -169,11 +164,6 @@ class Settings(BaseSettings):
             "password": self.redis_password,
             "decode_responses": True,
         }
-    
-    class Config:
-        """Pydantic config."""
-        env_file = ".env"
-        case_sensitive = False
 
 
 @lru_cache()

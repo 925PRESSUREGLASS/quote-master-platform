@@ -113,8 +113,8 @@ async def list_quotes(
     category_id: Optional[str] = Query(None),
     author: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    sort_by: str = Query("created_at", regex="^(created_at|popularity|likes|views)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("created_at", pattern="^(created_at|popularity|likes|views)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db)
 ):
     """List public quotes."""

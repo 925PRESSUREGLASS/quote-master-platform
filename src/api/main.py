@@ -19,6 +19,7 @@ from src.core.exceptions import QuoteMasterProException
 from src.api.routers import (
     auth,
     quotes,
+    service_quotes,
     voice,
     analytics,
     users,
@@ -110,7 +111,7 @@ def create_application() -> FastAPI:
         docs_url="/docs" if settings.debug else None,
         redoc_url="/redoc" if settings.debug else None,
         openapi_url="/openapi.json" if settings.debug else None,
-        lifespan=lifespan,
+        # lifespan=lifespan,  # Temporarily disabled for debugging
     )
     
     # Add middleware
@@ -213,6 +214,12 @@ def setup_routes(app: FastAPI) -> None:
         quotes.router,
         prefix="/api/v1/quotes",
         tags=["Quotes"]
+    )
+    
+    app.include_router(
+        service_quotes.router,
+        prefix="/api/v1",
+        tags=["Service Quotes"]
     )
     
     app.include_router(
@@ -372,6 +379,7 @@ def custom_openapi():
         {"name": "Authentication", "description": "User authentication and authorization"},
         {"name": "Users", "description": "User management"},
         {"name": "Quotes", "description": "Quote generation and management"},
+        {"name": "Service Quotes", "description": "Service quote calculation for window and pressure cleaning"},
         {"name": "Voice Processing", "description": "Voice recognition and processing"},
         {"name": "Analytics", "description": "Analytics and reporting"},
         {"name": "Administration", "description": "Admin operations"},

@@ -204,11 +204,11 @@ class AnalyticsQuery(BaseModel):
     """Analytics query schema."""
     start_date: datetime
     end_date: datetime
-    metrics: List[str] = Field(..., min_items=1)
+    metrics: List[str] = Field(..., min_length=1)
     dimensions: Optional[List[str]] = None
     filters: Optional[Dict[str, Any]] = None
     sort_by: Optional[str] = None
-    sort_order: Optional[str] = Field(None, regex="^(asc|desc)$")
+    sort_order: Optional[str] = Field(None, pattern="^(asc|desc)$")
     limit: int = Field(100, ge=1, le=1000)
     
     @validator('metrics')

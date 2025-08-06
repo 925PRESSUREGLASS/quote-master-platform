@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -80,7 +80,7 @@ class AnalyticsEvent(Base):
     event_category = Column(String(100), nullable=True)
     
     # Event data
-    properties = Column(JSONB, nullable=True)  # Event-specific properties
+    properties = Column(JSON, nullable=True)  # Event-specific properties
     value = Column(Float, nullable=True)  # Numeric value for the event
     
     # Context information
@@ -90,7 +90,7 @@ class AnalyticsEvent(Base):
     
     # Technical information
     user_agent = Column(Text, nullable=True)
-    ip_address = Column(INET, nullable=True)
+    ip_address = Column(String(45), nullable=True)  # IPv4/IPv6 compatible
     device_type = Column(String(50), nullable=True)  # mobile, tablet, desktop
     browser = Column(String(100), nullable=True)
     operating_system = Column(String(100), nullable=True)
@@ -153,7 +153,7 @@ class UserSession(Base):
     
     # Technical information
     user_agent = Column(Text, nullable=True)
-    ip_address = Column(INET, nullable=True)
+    ip_address = Column(String(45), nullable=True)  # IPv4/IPv6 compatible
     device_type = Column(String(50), nullable=True)
     browser = Column(String(100), nullable=True)
     operating_system = Column(String(100), nullable=True)
@@ -226,7 +226,7 @@ class PageView(Base):
     url = Column(String(500), nullable=False)
     title = Column(String(255), nullable=True)
     path = Column(String(255), nullable=False)
-    query_params = Column(JSONB, nullable=True)
+    query_params = Column(JSON, nullable=True)
     
     # Navigation
     referrer = Column(String(500), nullable=True)
@@ -266,14 +266,14 @@ class ConversionEvent(Base):
     # Attribution
     first_touch_source = Column(String(100), nullable=True)
     last_touch_source = Column(String(100), nullable=True)
-    conversion_path = Column(JSONB, nullable=True)  # Array of touchpoints
+    conversion_path = Column(JSON, nullable=True)  # Array of touchpoints
     
     # Timing
     converted_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     time_to_conversion = Column(Integer, nullable=True)  # seconds from first touch
     
     # Context
-    properties = Column(JSONB, nullable=True)
+    properties = Column(JSON, nullable=True)
     
     def __repr__(self) -> str:
         return f"<ConversionEvent(id={self.id}, goal_name={self.goal_name}, user_id={self.user_id})>"
@@ -301,7 +301,7 @@ class FunnelStep(Base):
     time_spent = Column(Float, nullable=True)  # seconds on this step
     
     # Context
-    properties = Column(JSONB, nullable=True)
+    properties = Column(JSON, nullable=True)
     
     def __repr__(self) -> str:
         return f"<FunnelStep(funnel_name={self.funnel_name}, step_name={self.step_name})>"

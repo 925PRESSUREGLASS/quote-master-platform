@@ -39,7 +39,7 @@ class QuoteGenerate(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=500)
     category: Optional[str] = None
     style: Optional[str] = None
-    length: Optional[str] = Field(None, regex="^(short|medium|long)$")
+    length: Optional[str] = Field(None, pattern="^(short|medium|long)$")
     tone: Optional[str] = None
     author_style: Optional[str] = None
     context: Optional[str] = None
@@ -122,7 +122,7 @@ class QuoteCategoryBase(BaseModel):
     """Base quote category schema."""
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
-    color: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     icon: Optional[str] = Field(None, max_length=50)
 
 
@@ -136,7 +136,7 @@ class QuoteCategoryUpdate(BaseModel):
     """Quote category update schema."""
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
-    color: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     icon: Optional[str] = Field(None, max_length=50)
     parent_id: Optional[UUID] = None
     sort_order: Optional[int] = None
@@ -185,8 +185,8 @@ class QuoteSearchRequest(BaseModel):
     min_length: Optional[int] = None
     max_length: Optional[int] = None
     sentiment: Optional[str] = None
-    sort_by: Optional[str] = Field(None, regex="^(created_at|popularity|likes|views)$")
-    sort_order: Optional[str] = Field(None, regex="^(asc|desc)$")
+    sort_by: Optional[str] = Field(None, pattern="^(created_at|popularity|likes|views)$")
+    sort_order: Optional[str] = Field(None, pattern="^(asc|desc)$")
     limit: int = Field(20, ge=1, le=100)
     offset: int = Field(0, ge=0)
 
@@ -202,8 +202,8 @@ class QuoteSearchResponse(BaseModel):
 
 class QuoteBulkAction(BaseModel):
     """Quote bulk action schema."""
-    quote_ids: List[UUID] = Field(..., min_items=1, max_items=100)
-    action: str = Field(..., regex="^(delete|archive|publish|feature)$")
+    quote_ids: List[UUID] = Field(..., min_length=1, max_length=100)
+    action: str = Field(..., pattern="^(delete|archive|publish|feature)$")
 
 
 class QuoteAnalytics(BaseModel):

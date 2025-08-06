@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -85,10 +85,10 @@ class Quote(Base):
     source = Column(String(20), default=QuoteSource.AI_GENERATED)
     ai_model = Column(String(50), nullable=True)  # Which AI model generated it
     prompt_used = Column(Text, nullable=True)  # Original prompt
-    generation_params = Column(JSONB, nullable=True)  # AI generation parameters
+    generation_params = Column(JSON, nullable=True)  # AI generation parameters
     
     # Psychology analysis
-    psychological_profile = Column(JSONB, nullable=True)  # Psychological insights
+    psychological_profile = Column(JSON, nullable=True)  # Psychological insights
     emotional_tone = Column(String(50), nullable=True)
     sentiment_score = Column(Float, nullable=True)  # -1 to 1
     complexity_score = Column(Float, nullable=True)  # 0 to 1
@@ -116,7 +116,7 @@ class Quote(Base):
     status = Column(String(20), default=QuoteStatus.PUBLISHED)
     
     # SEO and discovery
-    tags = Column(JSONB, nullable=True)  # Array of tags
+    tags = Column(JSON, nullable=True)  # Array of tags
     keywords = Column(Text, nullable=True)  # Comma-separated keywords
     
     # Timestamps

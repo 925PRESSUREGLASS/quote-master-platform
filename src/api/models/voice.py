@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey, LargeBinary
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey, LargeBinary, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -73,7 +73,7 @@ class VoiceRecording(Base):
     
     # Recording metadata
     recorded_at = Column(DateTime(timezone=True), nullable=True)
-    device_info = Column(JSONB, nullable=True)  # Recording device information
+    device_info = Column(JSON, nullable=True)  # Recording device information
     quality_score = Column(Float, nullable=True)  # 0-1 audio quality assessment
     
     # Processing status
@@ -86,9 +86,9 @@ class VoiceRecording(Base):
     speaker_count = Column(Integer, nullable=True)  # Number of speakers detected
     
     # Analysis results
-    emotional_analysis = Column(JSONB, nullable=True)  # Emotional tone analysis
-    content_categories = Column(JSONB, nullable=True)  # Content categorization
-    keywords = Column(JSONB, nullable=True)  # Extracted keywords
+    emotional_analysis = Column(JSON, nullable=True)  # Emotional tone analysis
+    content_categories = Column(JSON, nullable=True)  # Content categorization
+    keywords = Column(JSON, nullable=True)  # Extracted keywords
     sentiment_score = Column(Float, nullable=True)  # -1 to 1
     
     # Processing metadata
@@ -157,8 +157,8 @@ class VoiceProcessingJob(Base):
     priority = Column(Integer, default=5)  # 1-10, higher = more priority
     
     # Processing parameters
-    parameters = Column(JSONB, nullable=True)  # Job-specific parameters
-    model_config = Column(JSONB, nullable=True)  # AI model configuration
+    parameters = Column(JSON, nullable=True)  # Job-specific parameters
+    model_config = Column(JSON, nullable=True)  # AI model configuration
     
     # Progress tracking
     progress_percent = Column(Float, default=0.0)  # 0-100
@@ -167,8 +167,8 @@ class VoiceProcessingJob(Base):
     steps_completed = Column(Integer, default=0)
     
     # Results
-    result_data = Column(JSONB, nullable=True)  # Job results
-    output_files = Column(JSONB, nullable=True)  # Generated files
+    result_data = Column(JSON, nullable=True)  # Job results
+    output_files = Column(JSON, nullable=True)  # Generated files
     
     # Error handling
     error_message = Column(Text, nullable=True)
@@ -272,11 +272,11 @@ class VoiceModel(Base):
     # Model type and capabilities
     model_type = Column(String(50), nullable=False)  # transcription, analysis, generation
     provider = Column(String(50), nullable=False)  # openai, anthropic, custom
-    capabilities = Column(JSONB, nullable=True)  # List of capabilities
+    capabilities = Column(JSON, nullable=True)  # List of capabilities
     
     # Configuration
-    default_config = Column(JSONB, nullable=True)  # Default parameters
-    supported_formats = Column(JSONB, nullable=True)  # Supported audio formats
+    default_config = Column(JSON, nullable=True)  # Default parameters
+    supported_formats = Column(JSON, nullable=True)  # Supported audio formats
     max_file_size = Column(Integer, nullable=True)  # Max file size in bytes
     max_duration = Column(Integer, nullable=True)  # Max duration in seconds
     
@@ -324,7 +324,7 @@ class SpeechSegment(Base):
     # Analysis
     emotional_tone = Column(String(50), nullable=True)
     sentiment_score = Column(Float, nullable=True)  # -1 to 1
-    words = Column(JSONB, nullable=True)  # Array of word-level data
+    words = Column(JSON, nullable=True)  # Array of word-level data
     
     def __repr__(self) -> str:
         preview = self.text[:50] + "..." if len(self.text) > 50 else self.text
