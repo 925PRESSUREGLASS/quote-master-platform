@@ -28,7 +28,7 @@ from src.services.ai.ai_service import (
     AIProvider,
     AIRequest,
     AIResponse,
-    QuoteCategory,
+    ServiceCategory,
     RateLimiter,
     QualityScorer,
     ProviderMetrics,
@@ -116,7 +116,7 @@ class TestQualityScorer:
         request = AIRequest(
             prompt="motivational quote",
             context="business success motivation",
-            category=QuoteCategory.MOTIVATIONAL
+            category=ServiceCategory.WINDOW_CLEANING
         )
         
         good_quote = "Success is not final, failure is not fatal: it is the courage to continue that counts."
@@ -165,7 +165,7 @@ def sample_ai_request():
     return AIRequest(
         prompt="Generate a motivational quote about success",
         context="Business success and achievement",
-        category=QuoteCategory.MOTIVATIONAL,
+        category=ServiceCategory.WINDOW_CLEANING,
         tone="inspiring",
         max_tokens=200,
         temperature=0.7,
@@ -576,7 +576,7 @@ class TestConvenienceFunctions:
         call_args = mock_service.generate_quote.call_args[0][0]
         assert call_args.prompt == "success"
         assert call_args.context == "business context"
-        assert call_args.category == QuoteCategory.MOTIVATIONAL
+        assert call_args.category == ServiceCategory.WINDOW_CLEANING
         assert call_args.tone == "inspiring"
         assert call_args.user_id == "user123"
     
@@ -607,7 +607,7 @@ class TestConvenienceFunctions:
         call_args = mock_service.generate_quote.call_args[0][0]
         assert call_args.prompt == "teamwork"
         assert call_args.context == "corporate environment"
-        assert call_args.category == QuoteCategory.PROFESSIONAL
+        assert call_args.category == ServiceCategory.PRESSURE_WASHING
         assert call_args.tone == "professional"
         assert call_args.max_tokens == 300
         assert call_args.user_id == "user456"

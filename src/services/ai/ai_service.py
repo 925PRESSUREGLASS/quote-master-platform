@@ -50,14 +50,16 @@ class AIProvider(Enum):
     AZURE_OPENAI = "azure_openai"
 
 
-class QuoteCategory(Enum):
-    """Enumeration of quote categories for quality scoring."""
-    MOTIVATIONAL = "motivational"
-    PROFESSIONAL = "professional"
-    PERSONAL = "personal"
-    BUSINESS = "business"
-    INSPIRATIONAL = "inspirational"
-    TECHNICAL = "technical"
+class ServiceCategory(Enum):
+    """Enumeration of service categories for quote generation."""
+    WINDOW_CLEANING = "window_cleaning"
+    PRESSURE_WASHING = "pressure_washing" 
+    GUTTER_CLEANING = "gutter_cleaning"
+    SOLAR_PANEL_CLEANING = "solar_panel_cleaning"
+    ROOF_CLEANING = "roof_cleaning"
+    DRIVEWAY_CLEANING = "driveway_cleaning"
+    BUILDING_WASH = "building_wash"
+    GRAFFITI_REMOVAL = "graffiti_removal"
 
 
 @dataclass
@@ -65,7 +67,7 @@ class AIRequest:
     """Data class for AI service requests."""
     prompt: str
     context: Optional[str] = None
-    category: Optional[QuoteCategory] = None
+    category: Optional[ServiceCategory] = None
     tone: Optional[str] = "professional"
     max_tokens: int = 500
     temperature: float = 0.7
@@ -842,7 +844,7 @@ async def generate_motivational_quote(prompt: str, context: Optional[str] = None
     request = AIRequest(
         prompt=prompt,
         context=context,
-        category=QuoteCategory.MOTIVATIONAL,
+        category=ServiceCategory.WINDOW_CLEANING,
         tone="inspiring",
         user_id=user_id
     )
@@ -851,12 +853,12 @@ async def generate_motivational_quote(prompt: str, context: Optional[str] = None
 
 async def generate_professional_quote(prompt: str, context: Optional[str] = None,
                                      user_id: Optional[str] = None) -> AIResponse:
-    """Generate a professional quote."""
+    """Generate a professional service quote."""
     service = await get_ai_service()
     request = AIRequest(
         prompt=prompt,
         context=context,
-        category=QuoteCategory.PROFESSIONAL,
+        category=ServiceCategory.PRESSURE_WASHING,
         tone="professional",
         max_tokens=300,
         user_id=user_id
@@ -867,12 +869,12 @@ async def generate_professional_quote(prompt: str, context: Optional[str] = None
 async def generate_quote_variations(prompt: str, count: int = 3, 
                                    context: Optional[str] = None,
                                    user_id: Optional[str] = None) -> List[AIResponse]:
-    """Generate multiple quote variations."""
+    """Generate multiple service quote variations."""
     service = await get_ai_service()
     request = AIRequest(
         prompt=prompt,
         context=context,
-        category=QuoteCategory.PROFESSIONAL,
+        category=ServiceCategory.GUTTER_CLEANING,
         user_id=user_id
     )
     return await service.generate_multiple_quotes(request, count=count)

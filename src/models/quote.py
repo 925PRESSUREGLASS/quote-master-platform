@@ -274,3 +274,27 @@ class Quote(Base):
                 "id": getattr(self, 'id', None),
                 "content": "Error loading quote"
             }
+
+
+class QuoteGeneration(Base):
+    """Model for tracking quote generation requests and results."""
+    __tablename__ = "quote_generations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    prompt = Column(Text, nullable=False)
+    context = Column(Text, nullable=True)
+    category = Column(Enum(QuoteCategory), nullable=True)
+    ai_model = Column(Enum(AIModel), nullable=False)
+    generated_content = Column(Text, nullable=True)
+    quality_score = Column(Float, nullable=True)
+    processing_time = Column(Float, nullable=True)
+    success = Column(Boolean, default=False)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship
+    user = relationship("User", back_populates="quote_generations")
+    
+    def __repr__(self):
+        return f"<QuoteGeneration(id={self.id}, user_id={self.user_id}, success={self.success})>"

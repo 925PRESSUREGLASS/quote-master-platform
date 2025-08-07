@@ -99,6 +99,11 @@ class ConflictException(HTTPException):
         )
 
 
+# Aliases for backward compatibility
+AuthenticationError = AuthenticationException
+ValidationError = ValidationException
+
+
 class RateLimitException(HTTPException):
     """Rate limit exceeded exceptions."""
     

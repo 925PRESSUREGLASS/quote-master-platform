@@ -569,7 +569,7 @@ class PricingValidator:
         
         return base_travel
     
-    def validate_pricing(self, pricing: Dict[str, float], market_context: Optional[Dict[str, Any]] = None) -> Tuple[float, List[str]]:
+    def validate_pricing(self, pricing: Dict[str, float], market_context: Dict[str, Any] = None) -> Tuple[float, List[str]]:
         """Validate pricing accuracy and provide recommendations."""
         total_price = pricing["total"]
         recommendations = []

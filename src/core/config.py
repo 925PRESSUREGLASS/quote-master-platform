@@ -178,6 +178,27 @@ class Settings(BaseSettings):
             "password": self.redis_password,
             "decode_responses": True,
         }
+    
+    # Uppercase aliases for AI service compatibility
+    @property
+    def OPENAI_API_KEY(self) -> str:
+        """OpenAI API key (uppercase alias)."""
+        return self.openai_api_key
+    
+    @property
+    def ANTHROPIC_API_KEY(self) -> str:
+        """Anthropic API key (uppercase alias)."""
+        return self.anthropic_api_key
+    
+    @property
+    def AZURE_OPENAI_API_KEY(self) -> Optional[str]:
+        """Azure OpenAI API key (uppercase alias)."""
+        return self.azure_openai_api_key
+    
+    @property
+    def AZURE_OPENAI_ENDPOINT(self) -> Optional[str]:
+        """Azure OpenAI endpoint (uppercase alias)."""
+        return self.azure_openai_endpoint
 
 
 @lru_cache()

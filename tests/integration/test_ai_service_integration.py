@@ -14,7 +14,7 @@ from src.services.ai.ai_service import (
     AIService,
     AIProvider,
     AIRequest,
-    QuoteCategory,
+    ServiceCategory,
     get_ai_service
 )
 from src.core.exceptions import AIServiceError
@@ -75,10 +75,10 @@ class TestAIServiceIntegration:
         
         # Create test request
         request = AIRequest(
-            prompt="Generate a motivational quote about perseverance",
-            context="Personal development and goal achievement",
-            category=QuoteCategory.MOTIVATIONAL,
-            tone="inspiring",
+            prompt="Generate a window cleaning service quote",
+            context="Residential property cleaning services",
+            category=ServiceCategory.WINDOW_CLEANING,
+            tone="professional",
             user_id="integration_test_user"
         )
         
@@ -122,8 +122,8 @@ class TestAIServiceIntegration:
         service.clients[AIProvider.ANTHROPIC].messages.create.return_value = mock_anthropic_response
         
         request = AIRequest(
-            prompt="Generate a quote about resilience",
-            category=QuoteCategory.INSPIRATIONAL,
+            prompt="Generate a pressure washing service quote",
+            category=ServiceCategory.PRESSURE_WASHING,
             user_id="fallback_test_user"
         )
         
@@ -289,8 +289,8 @@ class TestAIServiceIntegration:
         service.generate_quote = mock_generate_quote
         
         request = AIRequest(
-            prompt="Generate success quotes",
-            category=QuoteCategory.MOTIVATIONAL,
+            prompt="Generate gutter cleaning service quotes",
+            category=ServiceCategory.GUTTER_CLEANING,
             user_id="multi_quote_user"
         )
         
