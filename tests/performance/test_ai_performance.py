@@ -151,7 +151,7 @@ class TestAIServicePerformance:
             
             # Generate many quotes to test memory usage
             for i in range(100):
-                result = asyncio.run(ai_service.generate_quote(
+                asyncio.run(ai_service.generate_quote(
                     AIRequest(
                         prompt="Generate a motivational quote",
                         context=f"memory_test_{i}",
