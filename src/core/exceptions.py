@@ -49,6 +49,21 @@ class AuthorizationException(HTTPException):
         )
 
 
+class AIServiceError(QuoteMasterProException):
+    """AI service related exceptions."""
+    pass
+
+
+class RateLimitError(QuoteMasterProException):
+    """Rate limiting exceptions."""
+    pass
+
+
+class QuotaExceededError(QuoteMasterProException):
+    """API quota exceeded exceptions."""
+    pass
+
+
 class ValidationException(HTTPException):
     """Validation-related exceptions."""
     

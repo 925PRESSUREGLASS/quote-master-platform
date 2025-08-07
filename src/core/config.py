@@ -54,6 +54,20 @@ class Settings(BaseSettings):
     anthropic_model: str = "claude-3-sonnet-20240229"
     anthropic_max_tokens: int = 4000
     
+    # Azure OpenAI
+    azure_openai_api_key: Optional[str] = None
+    azure_openai_endpoint: Optional[str] = None
+    azure_openai_api_version: str = "2024-02-01"
+    azure_openai_deployment_name: str = "gpt-4"
+    
+    # AI Service Configuration
+    ai_service_timeout: int = 30
+    ai_service_max_retries: int = 3
+    ai_service_cache_ttl: int = 3600
+    ai_service_rate_limit_openai: int = 60
+    ai_service_rate_limit_anthropic: int = 50
+    ai_service_rate_limit_azure: int = 60
+    
     # Voice Recognition
     whisper_model: str = "base"
     speech_recognition_timeout: int = 5

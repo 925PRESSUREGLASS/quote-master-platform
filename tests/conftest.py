@@ -13,9 +13,8 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 from src.main import app
-from src.core.database import get_db
+from src.core.database import get_db, Base
 from src.core.config import get_settings
-from src.models.base import Base
 
 
 # Test database URL
