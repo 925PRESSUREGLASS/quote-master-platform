@@ -434,7 +434,6 @@ class TestSecurityHeaders:
         # 4. Headers are properly controlled
         
         allowed_origins = ["https://quote-master-pro.com"]  # Should be restrictive
-        dangerous_origins = ["*", "http://malicious.com"]
         
         for origin in allowed_origins:
             assert origin.startswith("https://") or origin == "localhost"
