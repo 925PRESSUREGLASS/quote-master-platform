@@ -9,7 +9,7 @@ including input validation, authentication, authorization, and security vulnerab
 import pytest
 import asyncio
 import time
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from datetime import datetime, timedelta
 import hashlib
 import secrets
