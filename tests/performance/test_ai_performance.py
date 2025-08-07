@@ -29,8 +29,7 @@ class TestAIServicePerformance:
     def test_single_quote_generation_benchmark(self, benchmark, ai_service):
         """Benchmark single quote generation performance."""
         
-        @patch('src.services.ai.ai_service.openai.ChatCompletion.acreate')
-        async def mock_generate_quote():
+        def mock_generate_quote():
             # Mock the OpenAI response
             with patch('src.services.ai.ai_service.openai.ChatCompletion.acreate') as mock_openai:
                 mock_openai.return_value = AsyncMock()
@@ -38,21 +37,24 @@ class TestAIServicePerformance:
                     AsyncMock(message=AsyncMock(content="Success is not final, failure is not fatal."))
                 ]
                 
-                result = await ai_service.generate_quote(
-                    AIRequest(
-                        prompt="Generate a motivational quote",
-                        context="motivation",
-                        tone="positive"
+                async def run_test():
+                    result = await ai_service.generate_quote(
+                        AIRequest(
+                            prompt="Generate a motivational quote",
+                            context="motivation",
+                            tone="positive"
+                        )
                     )
-                )
-                return result
+                    return result
+                
+                return asyncio.run(run_test())
         
         # Benchmark the function
-        result = benchmark(asyncio.run, mock_generate_quote())
+        result = benchmark(mock_generate_quote)
         
-        # Verify result structure
+        # Verify result structure (AIResponse object)
         assert result is not None
-        assert "quote" in result or isinstance(result, str)
+        assert hasattr(result, 'text') or isinstance(result, str)
     
     @pytest.mark.benchmark
     def test_cache_performance_benchmark(self, benchmark, ai_service):
@@ -82,7 +84,7 @@ class TestAIServicePerformance:
         
         assert result == test_response
         # Cache operations should be under 5ms
-        assert benchmark.stats.mean < 0.005
+        assert benchmark.stats.stats.mean < 0.005
     
     @pytest.mark.asyncio
     async def test_concurrent_requests_performance(self, ai_service):
@@ -193,7 +195,7 @@ class TestAIServicePerformance:
         
         assert result is True
         # Rate limiting should be very fast
-        assert benchmark.stats.mean < 0.01  # Under 10ms (accounting for async overhead)
+        assert benchmark.stats.stats.mean < 0.01  # Under 10ms (accounting for async overhead)
     
     @pytest.mark.asyncio
     async def test_provider_fallback_performance(self, ai_service):
@@ -202,14 +204,15 @@ class TestAIServicePerformance:
         start_time = time.time()
         
         with patch('src.services.ai.ai_service.openai.ChatCompletion.acreate') as mock_openai, \
-             patch('src.services.ai.ai_service.anthropic.messages.create') as mock_anthropic:
+             patch('anthropic.AsyncAnthropic.messages') as mock_anthropic_messages:
             
             # First provider fails, second succeeds
             mock_openai.side_effect = Exception("Provider 1 failed")
-            mock_anthropic.return_value = AsyncMock()
-            mock_anthropic.return_value.content = [
-                AsyncMock(text="Fallback test quote")
-            ]
+            
+            # Mock Anthropic response
+            mock_anthropic_response = AsyncMock()
+            mock_anthropic_response.content = [AsyncMock(text="Fallback test quote")]
+            mock_anthropic_messages.create = AsyncMock(return_value=mock_anthropic_response)
             
             result = await ai_service.generate_quote(
                 AIRequest(
@@ -246,7 +249,7 @@ class TestAIServicePerformance:
         assert isinstance(result, str)
         assert len(result) > 0
         # Cache key generation should be very fast
-        assert benchmark.stats.mean < 0.0001  # Under 0.1ms
+        assert benchmark.stats.stats.mean < 0.0001  # Under 0.1ms
 
 
 @pytest.mark.performance

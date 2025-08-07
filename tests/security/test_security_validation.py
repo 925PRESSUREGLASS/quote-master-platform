@@ -9,6 +9,7 @@ including input validation, authentication, authorization, and security vulnerab
 import pytest
 import asyncio
 import time
+from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 import hashlib
 import re
@@ -148,8 +149,8 @@ class TestAuthenticationSecurity:
         
         test_password = "TestPassword123!"
         
-        # Hash the password
-        hashed_password = auth_service.hash_password(test_password)
+        # Hash the password using correct method name
+        hashed_password = auth_service.get_password_hash(test_password)
         
         # Verify hash properties
         assert hashed_password != test_password  # Original password not stored
@@ -161,7 +162,7 @@ class TestAuthenticationSecurity:
         assert not auth_service.verify_password("WrongPassword", hashed_password)
         
         # Verify different hashes for same password (salt)
-        hash2 = auth_service.hash_password(test_password)
+        hash2 = auth_service.get_password_hash(test_password)
         assert hashed_password != hash2  # Different salts produce different hashes
         
         # Both hashes should verify the same password
@@ -199,6 +200,8 @@ class TestAuthenticationSecurity:
     def test_password_strength_validation(self, auth_service):
         """Test password strength requirements."""
         
+        from src.core.security import validate_password_strength
+        
         # Weak passwords that should be rejected
         weak_passwords = [
             "123456",
@@ -213,7 +216,7 @@ class TestAuthenticationSecurity:
         ]
         
         for weak_password in weak_passwords:
-            is_valid = auth_service.validate_password_strength(weak_password)
+            is_valid = validate_password_strength(weak_password)
             assert not is_valid, f"Weak password '{weak_password}' should be rejected"
         
         # Strong passwords that should be accepted
@@ -225,7 +228,7 @@ class TestAuthenticationSecurity:
         ]
         
         for strong_password in strong_passwords:
-            is_valid = auth_service.validate_password_strength(strong_password)
+            is_valid = validate_password_strength(strong_password)
             assert is_valid, f"Strong password '{strong_password}' should be accepted"
     
     @pytest.mark.security
@@ -250,6 +253,11 @@ class TestAuthenticationSecurity:
 
 class TestApiSecurity:
     """Test API security measures."""
+    
+    @pytest.fixture
+    def ai_service(self):
+        """Create AI service instance for testing."""
+        return AIService()
     
     @pytest.mark.security
     def test_rate_limiting_protection(self):
@@ -334,6 +342,10 @@ class TestApiSecurity:
 class TestDataProtection:
     """Test data protection and privacy measures."""
     
+    @pytest.fixture
+    def ai_service(self):
+        return AIService()
+    
     @pytest.mark.security
     def test_pii_detection_and_handling(self, ai_service):
         """Test detection and handling of Personally Identifiable Information."""
@@ -362,14 +374,14 @@ class TestDataProtection:
                     )
                 ))
                 
-                # Verify PII is not echoed back in response
-                result_str = str(result)
+                # Verify PII is not echoed back in response text
+                response_text = result.text if result else ""
                 
-                # Check that common PII patterns are not present
-                assert not re.search(r'\b\d{3}-\d{2}-\d{4}\b', result_str)  # SSN pattern
-                assert not re.search(r'\b\d{4}-\d{4}-\d{4}-\d{4}\b', result_str)  # CC pattern
-                assert not re.search(r'\b\d{3}-\d{3}-\d{4}\b', result_str)  # Phone pattern
-                assert "@example.com" not in result_str  # Email not echoed
+                # Check that common PII patterns are not present in the actual response text
+                assert not re.search(r'\b\d{3}-\d{2}-\d{4}\b', response_text)  # SSN pattern
+                assert not re.search(r'\b\d{4}-\d{4}-\d{4}-\d{4}\b', response_text)  # CC pattern
+                assert not re.search(r'\b\d{3}-\d{3}-\d{4}\b', response_text)  # Phone pattern
+                assert "@example.com" not in response_text  # Email not echoed
     
     @pytest.mark.security
     def test_audit_logging_security(self):
