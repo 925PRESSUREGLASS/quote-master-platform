@@ -288,9 +288,11 @@ class TestApiSecurity:
             
             # Should handle large input gracefully
             result = asyncio.run(ai_service.generate_quote(
-                context=oversized_input,
-                style="motivational",
-                tone="positive"
+                AIRequest(
+                    prompt="Generate a motivational quote",
+                    context=oversized_input,
+                    tone="positive"
+                )
             ))
             
             # Should not crash and should produce valid output
@@ -317,9 +319,11 @@ class TestApiSecurity:
                 ]
                 
                 result = asyncio.run(ai_service.generate_quote(
-                    context=sensitive_input,
-                    style="motivational",
-                    tone="positive"
+                    AIRequest(
+                        prompt="Generate a motivational quote",
+                        context=sensitive_input,
+                        tone="positive"
+                    )
                 ))
                 
                 # Verify no sensitive data patterns in response
@@ -353,9 +357,11 @@ class TestDataProtection:
                 ]
                 
                 result = asyncio.run(ai_service.generate_quote(
-                    context=pii_input,
-                    style="motivational",
-                    tone="positive"
+                    AIRequest(
+                        prompt="Generate a motivational quote",
+                        context=pii_input,
+                        tone="positive"
+                    )
                 ))
                 
                 # Verify PII is not echoed back in response

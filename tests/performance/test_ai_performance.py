@@ -96,9 +96,11 @@ class TestAIServicePerformance:
                 # Create concurrent tasks
                 tasks = [
                     ai_service.generate_quote(
-                        context=f"test_context_{i}",
-                        style="motivational",
-                        tone="positive"
+                        AIRequest(
+                            prompt="Generate a motivational quote",
+                            context=f"test_context_{i}",
+                            tone="positive"
+                        )
                     )
                     for i in range(concurrency)
                 ]
@@ -142,9 +144,11 @@ class TestAIServicePerformance:
             # Generate many quotes to test memory usage
             for i in range(100):
                 result = asyncio.run(ai_service.generate_quote(
-                    context=f"memory_test_{i}",
-                    style="inspirational",
-                    tone="positive"
+                    AIRequest(
+                        prompt="Generate a motivational quote",
+                        context=f"memory_test_{i}",
+                        tone="positive"
+                    )
                 ))
                 
                 # Occasionally check memory
@@ -200,9 +204,11 @@ class TestAIServicePerformance:
             ]
             
             result = await ai_service.generate_quote(
-                context="fallback_test",
-                style="motivational",
-                tone="positive"
+                AIRequest(
+                    prompt="Generate a motivational quote",
+                    context="fallback_test",
+                    tone="positive"
+                )
             )
             
             end_time = time.time()
@@ -260,9 +266,11 @@ class TestPerformanceTargets:
                 start_time = time.time()
                 
                 await ai_service.generate_quote(
-                    context=f"sla_test_{i}",
-                    style="motivational",
-                    tone="positive"
+                    AIRequest(
+                        prompt="Generate a motivational quote",
+                        context=f"sla_test_{i}",
+                        tone="positive"
+                    )
                 )
                 
                 end_time = time.time()
