@@ -71,7 +71,7 @@ class TestAIServicePerformance:
             try:
                 ai_service.cache[cache_key] = json.dumps(test_response)
                 return json.loads(ai_service.cache.get(cache_key, "{}"))
-            except:
+            except Exception:
                 # Fallback to simple dict-like access for testing
                 setattr(ai_service.cache, '_test_cache', getattr(ai_service.cache, '_test_cache', {}))
                 ai_service.cache._test_cache[cache_key] = test_response
