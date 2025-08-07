@@ -33,8 +33,8 @@ class Settings(BaseSettings):
     db_pool_size: int = 20
     db_pool_overflow: int = 0
     
-    # Redis
-    redis_url: str = "redis://localhost:6379/0"
+    # Redis (with memory cache fallback)
+    redis_url: str = "memory://localhost"  # Default to memory cache for development
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
@@ -129,7 +129,8 @@ class Settings(BaseSettings):
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
-        "case_sensitive": False
+        "case_sensitive": False,
+        "extra": "ignore"  # Allow extra fields from .env
     }
     
     @validator("environment")

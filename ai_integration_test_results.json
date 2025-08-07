@@ -1,0 +1,56 @@
+{
+  "total": 6,
+  "passed": 0,
+  "failed": 6,
+  "success_rate": 0.0,
+  "results": [
+    {
+      "name": "AI Service Basic",
+      "passed": false,
+      "details": [],
+      "errors": [
+        "Exception: All AI providers failed. Last error: Anthropic request failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}}"
+      ]
+    },
+    {
+      "name": "Provider Fallback",
+      "passed": false,
+      "details": [],
+      "errors": [
+        "Exception: 'AIService' object has no attribute 'providers'"
+      ]
+    },
+    {
+      "name": "Rate Limiting",
+      "passed": false,
+      "details": [],
+      "errors": [
+        "Exception: All AI providers failed. Last error: Anthropic request failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}}"
+      ]
+    },
+    {
+      "name": "Response Caching",
+      "passed": false,
+      "details": [],
+      "errors": [
+        "Exception: All AI providers failed. Last error: Anthropic request failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}}"
+      ]
+    },
+    {
+      "name": "Unified Generator",
+      "passed": false,
+      "details": [],
+      "errors": [
+        "Exception: UnifiedServiceQuoteGenerator.generate_service_quote() missing 1 required positional argument: 'property_info'"
+      ]
+    },
+    {
+      "name": "Quality Scoring",
+      "passed": false,
+      "details": [],
+      "errors": [
+        "Exception: All AI providers failed. Last error: Anthropic request failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}}"
+      ]
+    }
+  ]
+}
