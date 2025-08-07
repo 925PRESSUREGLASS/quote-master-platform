@@ -818,82 +818,34 @@ class UnifiedServiceQuoteGenerator:
         
         try:
             # Check cache first
-            cache_params = {
-                "service_type": service_type.value if service_type else "",
-                "property_type": property_type.value if property_type else "",
-                "job_description": job_description,
-                "property_info": property_info
-            }
-            cache_key = self.cache_manager.get_cache_key(cache_params)
-            cached_quote = self.cache_manager.get_cached_quote(cache_key)
-            
+            cached_quote = await self._check_cache(job_description, property_info, service_type, property_type)
             if cached_quote:
-                logger.info("Returning cached service quote")
                 return cached_quote
             
-            # Infer service and property types if not provided
-            if not service_type:
-                service_type = self._infer_service_type(job_description, property_info)
-            
-            if not property_type:
-                property_type = self._infer_property_type(property_info)
-            
-            # Create customer profile
-            customer_profile = self._create_customer_profile(customer_info or {})
-            
-            # Analyze service complexity
-            property_details = {
-                "property_type": property_type.value,
-                "size": customer_info.get("size", "medium") if customer_info else "medium"
-            }
-            
-            service_assessment = self.complexity_analyzer.analyze_complexity(
-                job_description, property_details
-            )
-            service_assessment.primary_service = service_type  # Override inferred service
-            
-            # Create property analysis
-            property_analysis = PropertyAnalysis(
-                property_type=property_type,
-                size_category=customer_info.get("size", "medium") if customer_info else "medium",
-                access_score=0.8,  # Default - would be determined by assessment
-                condition_score=0.7,  # Default - would be determined by assessment
-                safety_considerations=service_assessment.risk_factors
+            # Prepare service data
+            service_type, property_type, customer_profile = self._prepare_service_data(
+                job_description, property_info, customer_info, service_type, property_type
             )
             
-            # Calculate pricing
-            base_pricing = self.pricing_validator.calculate_pricing(service_assessment, property_analysis)
+            # Perform service analysis
+            service_assessment, property_analysis = self._perform_service_analysis(
+                job_description, property_info, customer_info, service_type, property_type
+            )
             
-            # Select and apply pricing strategy
-            pricing_strategy = self.ab_test_manager.select_pricing_strategy(customer_id)
-            final_pricing = self.ab_test_manager.apply_pricing_strategy(base_pricing, pricing_strategy)
+            # Calculate final pricing
+            final_pricing, pricing_confidence, recommendations = self._calculate_final_pricing(
+                service_assessment, property_analysis, customer_id
+            )
             
-            # Validate pricing
-            pricing_confidence, recommendations = self.pricing_validator.validate_pricing(final_pricing)
-            
-            # Generate upsell opportunities
+            # Generate additional services
             upsell_opportunities = self._generate_upsell_opportunities(service_type, service_assessment)
-            
-            # Generate alternative options
             alternative_options = self._generate_alternative_options(final_pricing, service_assessment)
-            
-            # Generate terms and conditions
             terms_conditions = self._generate_terms_and_conditions(service_type, service_assessment)
             
             # Create metadata
-            metadata = ServiceQuoteMetadata(
-                source_provider=AIProvider.OPENAI,  # Default provider
-                generation_time=datetime.now(),
-                processing_duration=time.time() - start_time,
-                quote_version="v2.0",
-                accuracy_score=pricing_confidence,
-                service_assessment=service_assessment,
-                property_analysis=property_analysis,
-                pricing_confidence=pricing_confidence,
-                pricing_strategy=pricing_strategy,
-                recommendations=recommendations,
-                risk_factors=service_assessment.risk_factors,
-                cached=False
+            metadata = self._create_metadata(
+                start_time, pricing_confidence, service_assessment, property_analysis,
+                recommendations, customer_id
             )
             
             # Create enhanced service quote
@@ -908,9 +860,17 @@ class UnifiedServiceQuoteGenerator:
             )
             
             # Cache the quote
+            cache_params = {
+                "service_type": service_type.value if service_type else "",
+                "property_type": property_type.value if property_type else "",
+                "job_description": job_description,
+                "property_info": property_info
+            }
+            cache_key = self.cache_manager.get_cache_key(cache_params)
             self.cache_manager.cache_quote(cache_key, service_quote)
             
             # Record A/B test result
+            pricing_strategy = metadata.pricing_strategy
             self.ab_test_manager.record_result(pricing_strategy, pricing_confidence)
             
             logger.info(f"Generated service quote with confidence: {pricing_confidence:.2f}")
@@ -1149,6 +1109,95 @@ async def generate_bulk_quotes(
             valid_quotes.append(result)
     
     return valid_quotes
+
+    # Helper methods for refactored generate_service_quote
+    async def _check_cache(self, job_description: str, property_info: str, 
+                          service_type: Optional[ServiceType], property_type: Optional[PropertyType]):
+        """Check cache for existing quote."""
+        cache_params = {
+            "service_type": service_type.value if service_type else "",
+            "property_type": property_type.value if property_type else "",
+            "job_description": job_description,
+            "property_info": property_info
+        }
+        cache_key = self.cache_manager.get_cache_key(cache_params)
+        cached_quote = self.cache_manager.get_cached_quote(cache_key)
+        
+        if cached_quote:
+            logger.info("Returning cached service quote")
+            return cached_quote
+        return None
+
+    def _prepare_service_data(self, job_description: str, property_info: str, 
+                             customer_info: Optional[Dict[str, Any]], 
+                             service_type: Optional[ServiceType], 
+                             property_type: Optional[PropertyType]):
+        """Prepare service data by inferring types and creating customer profile."""
+        if not service_type:
+            service_type = self._infer_service_type(job_description, property_info)
+        
+        if not property_type:
+            property_type = self._infer_property_type(property_info)
+            
+        customer_profile = self._create_customer_profile(customer_info or {})
+        
+        return service_type, property_type, customer_profile
+
+    def _perform_service_analysis(self, job_description: str, property_info: str,
+                                 customer_info: Optional[Dict[str, Any]],
+                                 service_type: ServiceType, property_type: PropertyType):
+        """Perform comprehensive service analysis."""
+        property_details = {
+            "property_type": property_type.value,
+            "size": customer_info.get("size", "medium") if customer_info else "medium"
+        }
+        
+        service_assessment = self.complexity_analyzer.analyze_complexity(
+            job_description, property_details
+        )
+        service_assessment.primary_service = service_type
+        
+        property_analysis = PropertyAnalysis(
+            property_type=property_type,
+            size_category=customer_info.get("size", "medium") if customer_info else "medium",
+            access_score=0.8,
+            condition_score=0.7,
+            safety_considerations=service_assessment.risk_factors
+        )
+        
+        return service_assessment, property_analysis
+
+    def _calculate_final_pricing(self, service_assessment, property_analysis, customer_id: Optional[str]):
+        """Calculate final pricing with A/B testing."""
+        base_pricing = self.pricing_validator.calculate_pricing(service_assessment, property_analysis)
+        
+        pricing_strategy = self.ab_test_manager.select_pricing_strategy(customer_id)
+        final_pricing = self.ab_test_manager.apply_pricing_strategy(base_pricing, pricing_strategy)
+        
+        pricing_confidence, recommendations = self.pricing_validator.validate_pricing(final_pricing)
+        
+        return final_pricing, pricing_confidence, recommendations
+
+    def _create_metadata(self, start_time: float, pricing_confidence: float,
+                        service_assessment, property_analysis, recommendations,
+                        customer_id: Optional[str]):
+        """Create service quote metadata."""
+        pricing_strategy = self.ab_test_manager.select_pricing_strategy(customer_id)
+        
+        return ServiceQuoteMetadata(
+            source_provider=AIProvider.OPENAI,
+            generation_time=datetime.now(),
+            processing_duration=time.time() - start_time,
+            quote_version="v2.0",
+            accuracy_score=pricing_confidence,
+            service_assessment=service_assessment,
+            property_analysis=property_analysis,
+            pricing_confidence=pricing_confidence,
+            pricing_strategy=pricing_strategy,
+            recommendations=recommendations,
+            risk_factors=service_assessment.risk_factors,
+            cached=False
+        )
 
 
 # Singleton instance
