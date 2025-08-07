@@ -308,7 +308,7 @@ class TestPerformanceTargets:
         start_time = time.time()
         try:
             ai_service.cache[test_key] = json.dumps(test_value)
-        except:
+        except Exception:
             # Fallback for testing
             setattr(ai_service.cache, '_test_cache', getattr(ai_service.cache, '_test_cache', {}))
             ai_service.cache._test_cache[test_key] = test_value
@@ -317,7 +317,7 @@ class TestPerformanceTargets:
         start_time = time.time()
         try:
             result = json.loads(ai_service.cache.get(test_key, "{}"))
-        except:
+        except Exception:
             # Fallback for testing
             result = getattr(ai_service.cache, '_test_cache', {}).get(test_key, {})
         get_time = time.time() - start_time
