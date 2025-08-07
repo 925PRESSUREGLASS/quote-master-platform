@@ -19,18 +19,15 @@ Version: 2.0.0
 """
 
 import asyncio
-import json
 import logging
 import random
 import time
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Any, Union, Callable
+from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
 
 import numpy as np
-from textblob import TextBlob
 try:
     import spacy
 except ImportError:
@@ -43,12 +40,10 @@ except ImportError:
     cosine_similarity = None
 
 from src.services.ai.ai_service import (
-    AIService, AIRequest, AIResponse, AIProvider,
-    get_ai_service
+    AIService, AIProvider
 )
 from src.services.quote.engine import QuoteEngine
 from src.services.quote.service_quote import ServiceQuoteService
-from src.core.exceptions import AIServiceError, RateLimitError
 from src.core.config import get_settings
 
 

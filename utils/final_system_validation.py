@@ -11,7 +11,8 @@ import sys
 
 # Add the src directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
+parent_dir = os.path.dirname(current_dir)
+src_dir = os.path.join(parent_dir, 'src')
 sys.path.insert(0, src_dir)
 
 try:

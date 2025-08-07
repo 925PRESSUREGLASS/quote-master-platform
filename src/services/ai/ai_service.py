@@ -14,9 +14,9 @@ import hashlib
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from contextlib import asynccontextmanager
 
@@ -36,7 +36,7 @@ from tenacity import (
 )
 
 from src.core.config import get_settings
-from src.core.exceptions import AIServiceError, RateLimitError, QuotaExceededError
+from src.core.exceptions import AIServiceError, RateLimitError
 
 
 # Configure logging
