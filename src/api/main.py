@@ -1,4 +1,4 @@
-"""Main FastAPI application for Quote Master Pro."""
+"""Enhanced FastAPI application for Quote Master Pro with comprehensive monitoring."""
 
 import time
 import logging
@@ -16,6 +16,12 @@ import structlog
 from src.core.config import get_settings
 from src.core.database import init_db, check_db_health
 from src.core.exceptions import QuoteMasterProException
+
+# Enhanced AI Service and Monitoring imports
+from src.services.ai.enhanced_ai_service import get_ai_service
+from src.services.ai.monitoring.tracing import AIServiceTracing
+from src.api.middleware.telemetry import setup_comprehensive_instrumentation
+
 from src.api.routers import (
     auth,
     quotes,
@@ -26,7 +32,10 @@ from src.api.routers import (
     admin
 )
 
-# Configure structured logging
+# Import enhanced quotes router
+from src.api.routers.enhanced_quotes import router as enhanced_quotes_router
+
+# Configure structured logging with enhanced format
 structlog.configure(
     processors=[
         structlog.stdlib.filter_by_level,
@@ -37,6 +46,10 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
+        structlog.processors.CallsiteParameterAdder(
+            parameters=[structlog.processors.CallsiteParameter.FUNC_NAME,
+                       structlog.processors.CallsiteParameter.LINENO]
+        ),
         structlog.processors.JSONRenderer()
     ],
     context_class=dict,
@@ -46,33 +59,49 @@ structlog.configure(
 )
 
 logger = structlog.get_logger(__name__)
-
-# Get settings
 settings = get_settings()
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
+    """Enhanced application lifespan manager with AI service initialization."""
+    
     # Startup
-    logger.info("Starting Quote Master Pro API", version=settings.app_version)
+    logger.info(
+        "Starting Quote Master Pro API with Enhanced AI Service",
+        version=settings.app_version,
+        environment=settings.environment
+    )
     
     try:
+        # Initialize OpenTelemetry tracing first
+        tracing_service = AIServiceTracing()
+        tracing_service.initialize_tracing()
+        logger.info("OpenTelemetry tracing initialized")
+        
         # Initialize database
         if not check_db_health():
             raise Exception("Database connection failed")
         
-        # Initialize database tables
         init_db()
         logger.info("Database initialized successfully")
+        
+        # Initialize enhanced AI service
+        ai_service = await get_ai_service()
+        logger.info("Enhanced AI service initialized with monitoring")
         
         # Additional startup tasks
         await startup_tasks()
         
-        logger.info("Application startup completed")
+        # Log startup completion with service health
+        health_status = await ai_service.get_health_status()
+        logger.info(
+            "Application startup completed",
+            ai_service_status=health_status["service_status"],
+            available_providers=list(health_status["providers"].keys())
+        )
         
     except Exception as e:
-        logger.error("Application startup failed", error=str(e))
+        logger.error("Application startup failed", error=str(e), exc_info=True)
         raise
     
     yield
@@ -82,39 +111,76 @@ async def lifespan(app: FastAPI):
     await shutdown_tasks()
     logger.info("Application shutdown completed")
 
-
 async def startup_tasks():
-    """Perform startup tasks."""
-    # Initialize Redis connection
-    # Initialize AI service connections
-    # Load ML models if needed
-    # Set up monitoring
-    pass
-
+    """Enhanced startup tasks."""
+    
+    try:
+        # Test AI service connectivity
+        ai_service = await get_ai_service()
+        health_status = await ai_service.get_health_status()
+        
+        # Log provider availability
+        for provider, stats in health_status["providers"].items():
+            logger.info(
+                "AI provider status",
+                provider=provider,
+                enabled=stats["config"]["enabled"],
+                circuit_breaker_state=stats["circuit_breaker"]["state"]
+            )
+        
+        # Initialize cache if enabled
+        if settings.enable_caching:
+            logger.info("Redis cache enabled and initialized")
+        
+        logger.info("Enhanced startup tasks completed successfully")
+        
+    except Exception as e:
+        logger.error("Startup tasks failed", error=str(e), exc_info=True)
+        # Don't fail startup for non-critical errors
+        logger.warning("Continuing startup despite startup task failures")
 
 async def shutdown_tasks():
-    """Perform shutdown tasks."""
-    # Close database connections
-    # Close Redis connections
-    # Clean up resources
-    pass
+    """Enhanced shutdown tasks."""
+    
+    try:
+        # Cleanup AI service
+        ai_service = await get_ai_service()
+        await ai_service.cleanup()
+        logger.info("AI service cleanup completed")
+        
+        # Additional cleanup tasks
+        logger.info("Enhanced shutdown tasks completed")
+        
+    except Exception as e:
+        logger.error("Shutdown tasks failed", error=str(e))
 
 
 def create_application() -> FastAPI:
-    """Create and configure FastAPI application."""
+    """Create and configure enhanced FastAPI application with comprehensive monitoring."""
     
-    # Create FastAPI app
+    # Create FastAPI app with enhanced configuration
     app = FastAPI(
         title=settings.app_name,
-        description="AI-powered quote generation platform with voice recognition and psychological insights",
+        description="""
+        AI-powered quote generation platform with advanced monitoring capabilities:
+        - Multi-provider AI integration (OpenAI, Claude, Azure)
+        - Intelligent provider selection and load balancing
+        - Circuit breaker protection and automatic failover
+        - Comprehensive OpenTelemetry tracing and metrics
+        - Real-time streaming responses
+        - Quality scoring and cost optimization
+        """,
         version=settings.app_version,
         docs_url="/docs" if settings.debug else None,
         redoc_url="/redoc" if settings.debug else None,
         openapi_url="/openapi.json" if settings.debug else None,
-        # lifespan=lifespan,  # Temporarily disabled for debugging
+        lifespan=lifespan,  # Enable enhanced lifespan management
     )
     
-    # Add middleware
+    # Setup comprehensive instrumentation FIRST (before other middleware)
+    setup_comprehensive_instrumentation(app)
+    
+    # Add other middleware
     setup_middleware(app)
     
     # Add routes
@@ -125,9 +191,8 @@ def create_application() -> FastAPI:
     
     return app
 
-
 def setup_middleware(app: FastAPI) -> None:
-    """Set up application middleware."""
+    """Set up enhanced application middleware."""
     
     # CORS middleware
     app.add_middleware(
@@ -136,6 +201,7 @@ def setup_middleware(app: FastAPI) -> None:
         allow_credentials=True,
         allow_methods=settings.allowed_methods,
         allow_headers=settings.allowed_headers,
+        expose_headers=["X-Request-ID", "X-Correlation-ID", "X-Trace-ID"],
     )
     
     # Trusted host middleware (security)
@@ -195,9 +261,15 @@ def setup_middleware(app: FastAPI) -> None:
 
 
 def setup_routes(app: FastAPI) -> None:
-    """Set up application routes."""
+    """Set up enhanced application routes with monitoring endpoints."""
     
-    # API routes
+    # Enhanced quotes router with AI monitoring
+    app.include_router(
+        enhanced_quotes_router,
+        tags=["Enhanced AI Quotes"]
+    )
+    
+    # Standard API routes
     app.include_router(
         auth.router,
         prefix="/api/v1/auth",
@@ -240,19 +312,36 @@ def setup_routes(app: FastAPI) -> None:
         tags=["Administration"]
     )
     
+    # Enhanced monitoring endpoints
+    @app.get("/api/v1/monitoring/metrics", tags=["Monitoring"])
+    async def get_metrics():
+        """Get application metrics."""
+        ai_service = await get_ai_service()
+        return await ai_service.get_health_status()
+    
     # Health check endpoints
     @app.get("/health", tags=["Health"])
     async def health_check():
-        """Health check endpoint."""
+        """Enhanced health check endpoint with AI service status."""
         db_healthy = check_db_health()
         
+        try:
+            ai_service = await get_ai_service()
+            ai_health = await ai_service.get_health_status()
+            ai_healthy = ai_health["service_status"] == "healthy"
+        except Exception:
+            ai_healthy = False
+        
+        overall_healthy = db_healthy and ai_healthy
+        
         return {
-            "status": "healthy" if db_healthy else "unhealthy",
+            "status": "healthy" if overall_healthy else "unhealthy",
             "version": settings.app_version,
             "timestamp": time.time(),
             "checks": {
                 "database": db_healthy,
-                # Add more health checks here
+                "ai_service": ai_healthy,
+                "overall": overall_healthy
             }
         }
     
