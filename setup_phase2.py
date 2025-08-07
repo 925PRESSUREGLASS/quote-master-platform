@@ -2,7 +2,6 @@
 Quote Master Pro - Phase 2 Setup Script
 Automated environment setup for enhanced testing implementation
 """
-import os
 import subprocess
 import sys
 from pathlib import Path
