@@ -1,17 +1,18 @@
 """Analytics Pydantic schemas."""
 
 from datetime import datetime
-from typing import Optional, List, Dict, Any
 from enum import Enum
-
-from pydantic import BaseModel, Field, validator
+from typing import Any, Dict, List, Optional
 from uuid import UUID
+
+from pydantic import BaseModel, Field, field_validator
 
 from src.api.models.analytics import EventType
 
 
 class AnalyticsEventBase(BaseModel):
     """Base analytics event schema."""
+
     event_type: EventType
     event_name: str
     event_category: Optional[str] = None
@@ -21,6 +22,7 @@ class AnalyticsEventBase(BaseModel):
 
 class AnalyticsEventCreate(AnalyticsEventBase):
     """Analytics event creation schema."""
+
     page_url: Optional[str] = None
     page_title: Optional[str] = None
     referrer: Optional[str] = None
@@ -41,6 +43,7 @@ class AnalyticsEventCreate(AnalyticsEventBase):
 
 class AnalyticsEventResponse(AnalyticsEventBase):
     """Analytics event response schema."""
+
     id: UUID
     user_id: Optional[UUID]
     session_id: Optional[UUID]
@@ -63,13 +66,14 @@ class AnalyticsEventResponse(AnalyticsEventBase):
     variant: Optional[str]
     timestamp: datetime
     server_timestamp: datetime
-    
+
     class Config:
         from_attributes = True
 
 
 class UserSessionBase(BaseModel):
     """Base user session schema."""
+
     landing_page: Optional[str] = None
     referrer: Optional[str] = None
     utm_source: Optional[str] = None
@@ -79,6 +83,7 @@ class UserSessionBase(BaseModel):
 
 class UserSessionCreate(UserSessionBase):
     """User session creation schema."""
+
     anonymous_id: Optional[str] = None
     user_agent: Optional[str] = None
     device_type: Optional[str] = None
@@ -92,6 +97,7 @@ class UserSessionCreate(UserSessionBase):
 
 class UserSessionUpdate(BaseModel):
     """User session update schema."""
+
     exit_page: Optional[str] = None
     page_views: Optional[int] = None
     quotes_generated: Optional[int] = None
@@ -101,6 +107,7 @@ class UserSessionUpdate(BaseModel):
 
 class UserSessionResponse(UserSessionBase):
     """User session response schema."""
+
     id: UUID
     user_id: Optional[UUID]
     session_token: str
@@ -127,13 +134,14 @@ class UserSessionResponse(UserSessionBase):
     engaged: bool
     converted: bool
     is_active: bool
-    
+
     class Config:
         from_attributes = True
 
 
 class PageViewCreate(BaseModel):
     """Page view creation schema."""
+
     url: str
     title: Optional[str] = None
     path: str
@@ -149,6 +157,7 @@ class PageViewCreate(BaseModel):
 
 class PageViewResponse(BaseModel):
     """Page view response schema."""
+
     id: UUID
     user_id: Optional[UUID]
     session_id: Optional[UUID]
@@ -164,13 +173,14 @@ class PageViewResponse(BaseModel):
     scroll_depth: Optional[float]
     clicks: int
     interactions: int
-    
+
     class Config:
         from_attributes = True
 
 
 class ConversionEventCreate(BaseModel):
     """Conversion event creation schema."""
+
     goal_name: str
     goal_category: Optional[str] = None
     value: Optional[float] = None
@@ -183,6 +193,7 @@ class ConversionEventCreate(BaseModel):
 
 class ConversionEventResponse(BaseModel):
     """Conversion event response schema."""
+
     id: UUID
     user_id: Optional[UUID]
     session_id: Optional[UUID]
@@ -195,13 +206,14 @@ class ConversionEventResponse(BaseModel):
     converted_at: datetime
     time_to_conversion: Optional[int]
     properties: Optional[Dict[str, Any]]
-    
+
     class Config:
         from_attributes = True
 
 
 class AnalyticsQuery(BaseModel):
     """Analytics query schema."""
+
     start_date: datetime
     end_date: datetime
     metrics: List[str] = Field(..., min_length=1)
@@ -210,22 +222,31 @@ class AnalyticsQuery(BaseModel):
     sort_by: Optional[str] = None
     sort_order: Optional[str] = Field(None, pattern="^(asc|desc)$")
     limit: int = Field(100, ge=1, le=1000)
-    
-    @validator('metrics')
+
+    @field_validator("metrics")
+    @classmethod
     def validate_metrics(cls, v):
         valid_metrics = [
-            'page_views', 'unique_visitors', 'sessions', 'bounce_rate',
-            'avg_session_duration', 'quotes_generated', 'voice_recordings',
-            'conversions', 'revenue', 'engagement_rate'
+            "page_views",
+            "unique_visitors",
+            "sessions",
+            "bounce_rate",
+            "avg_session_duration",
+            "quotes_generated",
+            "voice_recordings",
+            "conversions",
+            "revenue",
+            "engagement_rate",
         ]
         for metric in v:
             if metric not in valid_metrics:
-                raise ValueError(f'Invalid metric: {metric}')
+                raise ValueError(f"Invalid metric: {metric}")
         return v
 
 
 class AnalyticsMetric(BaseModel):
     """Analytics metric schema."""
+
     name: str
     value: float
     change: Optional[float] = None
@@ -234,12 +255,14 @@ class AnalyticsMetric(BaseModel):
 
 class AnalyticsDimension(BaseModel):
     """Analytics dimension schema."""
+
     name: str
     values: List[Dict[str, Any]]
 
 
 class AnalyticsReport(BaseModel):
     """Analytics report schema."""
+
     period: str
     start_date: datetime
     end_date: datetime
@@ -251,6 +274,7 @@ class AnalyticsReport(BaseModel):
 
 class UserEngagementMetrics(BaseModel):
     """User engagement metrics schema."""
+
     total_sessions: int
     total_page_views: int
     avg_session_duration: float
@@ -263,6 +287,7 @@ class UserEngagementMetrics(BaseModel):
 
 class QuoteGenerationMetrics(BaseModel):
     """Quote generation metrics schema."""
+
     total_quotes: int
     quotes_today: int
     quotes_this_week: int
@@ -275,6 +300,7 @@ class QuoteGenerationMetrics(BaseModel):
 
 class VoiceProcessingMetrics(BaseModel):
     """Voice processing metrics schema."""
+
     total_recordings: int
     recordings_today: int
     recordings_this_week: int
@@ -287,6 +313,7 @@ class VoiceProcessingMetrics(BaseModel):
 
 class RealtimeMetrics(BaseModel):
     """Real-time metrics schema."""
+
     active_users: int
     active_sessions: int
     requests_per_minute: float
@@ -299,6 +326,7 @@ class RealtimeMetrics(BaseModel):
 
 class DashboardData(BaseModel):
     """Dashboard data schema."""
+
     overview: UserEngagementMetrics
     quotes: QuoteGenerationMetrics
     voice: VoiceProcessingMetrics
@@ -312,6 +340,7 @@ class DashboardData(BaseModel):
 
 class FunnelStep(BaseModel):
     """Funnel step schema."""
+
     step_name: str
     step_order: int
     users: int
@@ -321,6 +350,7 @@ class FunnelStep(BaseModel):
 
 class FunnelAnalysis(BaseModel):
     """Funnel analysis schema."""
+
     funnel_name: str
     total_users: int
     completion_rate: float
@@ -332,6 +362,7 @@ class FunnelAnalysis(BaseModel):
 
 class ABTestResult(BaseModel):
     """A/B test result schema."""
+
     experiment_id: str
     variant: str
     users: int

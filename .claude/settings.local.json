@@ -3,7 +3,9 @@
     "allow": [
       "Bash(python:*)",
       "Bash(make:*)",
-      "Bash(timeout 10 python -m uvicorn:*)"
+      "Bash(timeout 10 python -m uvicorn:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

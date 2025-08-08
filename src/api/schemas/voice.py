@@ -1,17 +1,22 @@
 """Voice processing Pydantic schemas."""
 
 from datetime import datetime
-from typing import Optional, List, Dict, Any
 from enum import Enum
-
-from pydantic import BaseModel, Field, validator
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from src.api.models.voice import VoiceRecordingStatus, VoiceProcessingStatus, AudioFormat
+from pydantic import BaseModel, Field, field_validator
+
+from src.api.models.voice import (
+    AudioFormat,
+    VoiceProcessingStatus,
+    VoiceRecordingStatus,
+)
 
 
 class VoiceRecordingBase(BaseModel):
     """Base voice recording schema."""
+
     filename: str
     file_size: int
     file_format: AudioFormat
@@ -20,6 +25,7 @@ class VoiceRecordingBase(BaseModel):
 
 class VoiceRecordingCreate(BaseModel):
     """Voice recording creation schema."""
+
     original_filename: str
     file_format: AudioFormat
     duration_seconds: Optional[float] = None
@@ -29,6 +35,7 @@ class VoiceRecordingCreate(BaseModel):
 
 class VoiceRecordingUpdate(BaseModel):
     """Voice recording update schema."""
+
     transcription: Optional[str] = None
     quality_score: Optional[float] = Field(None, ge=0.0, le=1.0)
     is_public: Optional[bool] = None
@@ -37,6 +44,7 @@ class VoiceRecordingUpdate(BaseModel):
 
 class VoiceRecordingResponse(VoiceRecordingBase):
     """Voice recording response schema."""
+
     id: UUID
     user_id: UUID
     original_filename: Optional[str]
@@ -70,19 +78,21 @@ class VoiceRecordingResponse(VoiceRecordingBase):
     has_transcription: bool
     file_size_mb: float
     duration_formatted: str
-    
+
     class Config:
         from_attributes = True
 
 
 class VoiceProcessingJobBase(BaseModel):
     """Base voice processing job schema."""
+
     job_type: str
     parameters: Optional[Dict[str, Any]] = None
 
 
 class VoiceProcessingJobCreate(VoiceProcessingJobBase):
     """Voice processing job creation schema."""
+
     recording_id: UUID
     priority: int = Field(5, ge=1, le=10)
     processing_config: Optional[Dict[str, Any]] = None
@@ -90,6 +100,7 @@ class VoiceProcessingJobCreate(VoiceProcessingJobBase):
 
 class VoiceProcessingJobUpdate(BaseModel):
     """Voice processing job update schema."""
+
     status: Optional[VoiceProcessingStatus] = None
     progress_percent: Optional[float] = Field(None, ge=0.0, le=100.0)
     current_step: Optional[str] = None
@@ -99,6 +110,7 @@ class VoiceProcessingJobUpdate(BaseModel):
 
 class VoiceProcessingJobResponse(VoiceProcessingJobBase):
     """Voice processing job response schema."""
+
     id: UUID
     user_id: UUID
     recording_id: UUID
@@ -129,29 +141,32 @@ class VoiceProcessingJobResponse(VoiceProcessingJobBase):
     is_completed: bool
     is_failed: bool
     can_retry: bool
-    
+
     class Config:
         from_attributes = True
 
 
 class VoiceProcessRequest(BaseModel):
     """Voice processing request schema."""
+
     recording_id: UUID
     job_types: List[str] = Field(..., min_length=1)
     parameters: Optional[Dict[str, Any]] = None
     priority: int = Field(5, ge=1, le=10)
-    
-    @validator('job_types')
+
+    @field_validator("job_types")
+    @classmethod
     def validate_job_types(cls, v):
-        valid_types = ['transcription', 'analysis', 'quote_generation', 'enhancement']
+        valid_types = ["transcription", "analysis", "quote_generation", "enhancement"]
         for job_type in v:
             if job_type not in valid_types:
-                raise ValueError(f'Invalid job type: {job_type}')
+                raise ValueError(f"Invalid job type: {job_type}")
         return v
 
 
 class VoiceTranscriptionRequest(BaseModel):
     """Voice transcription request schema."""
+
     recording_id: UUID
     model: Optional[str] = None
     language: Optional[str] = None
@@ -162,6 +177,7 @@ class VoiceTranscriptionRequest(BaseModel):
 
 class VoiceAnalysisRequest(BaseModel):
     """Voice analysis request schema."""
+
     recording_id: UUID
     analyze_emotion: bool = True
     analyze_sentiment: bool = True
@@ -172,6 +188,7 @@ class VoiceAnalysisRequest(BaseModel):
 
 class VoiceToQuoteRequest(BaseModel):
     """Voice to quote conversion request schema."""
+
     recording_id: UUID
     style: Optional[str] = None
     length: Optional[str] = Field(None, pattern="^(short|medium|long)$")
@@ -182,6 +199,7 @@ class VoiceToQuoteRequest(BaseModel):
 
 class VoiceUploadResponse(BaseModel):
     """Voice upload response schema."""
+
     upload_url: str
     recording_id: UUID
     expires_at: datetime
@@ -191,6 +209,7 @@ class VoiceUploadResponse(BaseModel):
 
 class VoiceModelResponse(BaseModel):
     """Voice model response schema."""
+
     id: UUID
     name: str
     display_name: str
@@ -207,13 +226,15 @@ class VoiceModelResponse(BaseModel):
     accuracy_score: Optional[float]
     is_active: bool
     is_premium: bool
-    
+
     class Config:
         from_attributes = True
+        protected_namespaces = ()
 
 
 class SpeechSegmentResponse(BaseModel):
     """Speech segment response schema."""
+
     id: UUID
     recording_id: UUID
     start_time: float
@@ -227,13 +248,14 @@ class SpeechSegmentResponse(BaseModel):
     sentiment_score: Optional[float]
     words: Optional[List[Dict[str, Any]]]
     word_count: int
-    
+
     class Config:
         from_attributes = True
 
 
 class VoiceSearchRequest(BaseModel):
     """Voice recording search request schema."""
+
     query: Optional[str] = None
     status: Optional[VoiceRecordingStatus] = None
     has_transcription: Optional[bool] = None
@@ -241,7 +263,9 @@ class VoiceSearchRequest(BaseModel):
     max_duration: Optional[float] = None
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
-    sort_by: Optional[str] = Field(None, pattern="^(created_at|duration|quality_score)$")
+    sort_by: Optional[str] = Field(
+        None, pattern="^(created_at|duration|quality_score)$"
+    )
     sort_order: Optional[str] = Field(None, pattern="^(asc|desc)$")
     limit: int = Field(20, ge=1, le=100)
     offset: int = Field(0, ge=0)
@@ -249,6 +273,7 @@ class VoiceSearchRequest(BaseModel):
 
 class VoiceSearchResponse(BaseModel):
     """Voice recording search response schema."""
+
     recordings: List[VoiceRecordingResponse]
     total: int
     limit: int
@@ -258,6 +283,7 @@ class VoiceSearchResponse(BaseModel):
 
 class VoiceStatistics(BaseModel):
     """Voice processing statistics schema."""
+
     total_recordings: int
     total_duration: float
     total_processed: int
