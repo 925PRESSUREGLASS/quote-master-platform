@@ -63,21 +63,23 @@ class AIServiceTracing:
             trace.set_tracer_provider(trace_provider)
             
             # Configure exporters based on environment
-            if settings.environment == "production":
+            if settings.environment == "production" or os.getenv("USE_OTLP_COLLECTOR", "false").lower() == "true":
                 # Production: Export to OTLP collector
                 otlp_exporter = OTLPSpanExporter(
                     endpoint=os.getenv("OTLP_ENDPOINT", "http://localhost:4317"),
-                    headers={"authorization": f"Bearer {os.getenv('OTLP_TOKEN', '')}"}
+                    headers={}  # Add authentication if needed
                 )
                 trace_provider.add_span_processor(
                     BatchSpanProcessor(otlp_exporter)
                 )
+                logger.info("Using OTLP exporter for traces")
             else:
                 # Development: Export to console
                 console_exporter = ConsoleSpanExporter()
                 trace_provider.add_span_processor(
                     BatchSpanProcessor(console_exporter)
                 )
+                logger.info("Using console exporter for traces")
             
             # Configure metrics
             metric_reader = PeriodicExportingMetricReader(
@@ -109,7 +111,7 @@ class AIServiceTracing:
             logger.error(f"Failed to initialize OpenTelemetry tracing: {e}")
             # Fallback to noop implementations
             self.tracer = trace.NoOpTracer()
-            self.meter = metrics.NoOpMeter()
+            self.meter = metrics.NoOpMeter("fallback")
     
     def _instrument_libraries(self) -> None:
         """Automatically instrument common libraries."""

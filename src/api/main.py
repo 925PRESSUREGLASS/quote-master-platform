@@ -115,6 +115,14 @@ async def startup_tasks():
     """Enhanced startup tasks."""
     
     try:
+        # Initialize Redis cache if enabled
+        if settings.enable_caching:
+            from src.services.cache.cache_init import initialize_redis_cache
+            cache_init_result = await initialize_redis_cache()
+            logger.info("Cache initialization completed", 
+                       status=cache_init_result["status"],
+                       backend="redis" if cache_init_result.get("redis_config", {}).get("connected") else "memory")
+        
         # Test AI service connectivity
         ai_service = await get_ai_service()
         health_status = await ai_service.get_health_status()
@@ -128,14 +136,10 @@ async def startup_tasks():
                 circuit_breaker_state=stats["circuit_breaker"]["state"]
             )
         
-        # Initialize cache if enabled
-        if settings.enable_caching:
-            logger.info("Redis cache enabled and initialized")
-        
         logger.info("Enhanced startup tasks completed successfully")
         
     except Exception as e:
-        logger.error("Startup tasks failed", error=str(e), exc_info=True)
+        logger.error(f"Startup tasks failed: {e}", exc_info=True)
         # Don't fail startup for non-critical errors
         logger.warning("Continuing startup despite startup task failures")
 
@@ -148,11 +152,16 @@ async def shutdown_tasks():
         await ai_service.cleanup()
         logger.info("AI service cleanup completed")
         
+        # Cleanup Redis cache
+        if settings.enable_caching:
+            from src.services.cache.cache_init import cleanup_redis_cache
+            await cleanup_redis_cache()
+        
         # Additional cleanup tasks
         logger.info("Enhanced shutdown tasks completed")
         
     except Exception as e:
-        logger.error("Shutdown tasks failed", error=str(e))
+        logger.error(f"Shutdown tasks failed: {e}")
 
 
 def create_application() -> FastAPI:
@@ -194,6 +203,14 @@ def create_application() -> FastAPI:
 def setup_middleware(app: FastAPI) -> None:
     """Set up enhanced application middleware."""
     
+    # Cache middleware (add before CORS for better performance)
+    from src.api.middleware.cache_middleware import ResponseCacheMiddleware, get_cache_middleware_config
+    
+    cache_config = get_cache_middleware_config(settings.environment)
+    if settings.enable_caching and cache_config.get("enabled", False):
+        app.add_middleware(ResponseCacheMiddleware, **cache_config)
+        logger.info("Response caching middleware enabled", strategy=cache_config.get("default_strategy"))
+    
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
@@ -201,15 +218,16 @@ def setup_middleware(app: FastAPI) -> None:
         allow_credentials=True,
         allow_methods=settings.allowed_methods,
         allow_headers=settings.allowed_headers,
-        expose_headers=["X-Request-ID", "X-Correlation-ID", "X-Trace-ID"],
+        expose_headers=["X-Request-ID", "X-Correlation-ID", "X-Trace-ID", "X-Cache", "X-Cache-Date"],
     )
     
-    # Trusted host middleware (security)
+    # Trusted host middleware (security) - only in production
     if settings.is_production:
         app.add_middleware(
             TrustedHostMiddleware,
             allowed_hosts=["*.quotemasterpro.com", "quotemasterpro.com"]
         )
+    # In development mode, skip TrustedHostMiddleware to allow all hosts
     
     # Request logging middleware
     @app.middleware("http")
@@ -231,13 +249,15 @@ def setup_middleware(app: FastAPI) -> None:
             # Calculate processing time
             process_time = time.time() - start_time
             
-            # Log response
+            # Log response with cache information
+            cache_status = response.headers.get("X-Cache", "NONE")
             logger.info(
                 "Request completed",
                 method=request.method,
                 url=str(request.url),
                 status_code=response.status_code,
-                process_time=round(process_time, 4)
+                process_time=round(process_time, 4),
+                cache_status=cache_status
             )
             
             # Add processing time header
@@ -311,6 +331,14 @@ def setup_routes(app: FastAPI) -> None:
         prefix="/api/v1/admin",
         tags=["Administration"]
     )
+    
+    # Cache management routes
+    if settings.enable_caching:
+        from src.api.routers.cache_management import router as cache_router
+        app.include_router(
+            cache_router,
+            tags=["Cache Management"]
+        )
     
     # Enhanced monitoring endpoints
     @app.get("/api/v1/monitoring/metrics", tags=["Monitoring"])
