@@ -1,4 +1,4 @@
-# Hotspots – Last 180 Days
+# Hotspots - Last 180 Days
 
 ## Summary
 - **Reverts:** None detected.
