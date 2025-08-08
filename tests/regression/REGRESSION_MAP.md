@@ -3,7 +3,7 @@
 | area | rule | named test | severity | owner | fix idea |
 |------|------|------------|----------|-------|----------|
 | AI orchestration | Provider fallback sequence (OpenAI→Claude) | test_ai_fallback_order | high | AI Team | enforce service order in orchestrator |
-| AI orchestration | Performance score weights 0.4/0.3/0.3 | test_ai_performance_scoring_weights | medium | AI Team | refactor to constants |
+| AI orchestration | Performance score weights 0.4/0.3/0.3 | test_ai_performance_scoring_weights | medium | AI Team | refactor to constants; document that weights must sum to 1.0; regression test must verify sum is 1.0 |
 | AI orchestration | Cost-optimized selection uses quality/cost | test_ai_cost_optimized_selection | medium | AI Team | document defaults and ensure config override |
 | AI orchestration | Fallback executes when primary fails | test_ai_fallback_on_failure | high | AI Team | add provider health checks |
 | AI orchestration | Tracing env flag toggles instrumentation | test_tracing_env_toggle | low | Infra Team | validate ENABLE_TRACING behavior |
