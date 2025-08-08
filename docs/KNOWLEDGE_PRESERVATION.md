@@ -22,7 +22,7 @@
 - src/api/routers/quotes.py:194 - TODO: Implement tag filtering with JSONB
 - src/api/routers/quotes.py:499 - TODO: Prevent double-likes
 - src/api/routers/quotes.py:530 - TODO: Implement AI analysis for quotes
-- src/api/routers/quotes.py:203-216 - Sentiment range mapping (positive 0.1–1.0, negative -1.0–-0.1, neutral -0.1–0.1)
+- src/api/routers/quotes.py:203-216 - Sentiment range mapping (positive 0.1 ≤ x ≤ 1.0, negative -1.0 ≤ x ≤ -0.1, neutral -0.1 < x < 0.1)
 
 **Undocumented rules**
 - Sentiment filter uses predefined score ranges for search results
