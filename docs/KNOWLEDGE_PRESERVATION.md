@@ -48,7 +48,7 @@
 
 ## AI
 - src/services/ai/orchestrator.py:52-76 - Provider initialization order (OpenAI GPT-4 → GPT-3.5 → Claude Sonnet → Claude Haiku)
-- src/services/ai/orchestrator.py:197-208 - Performance score = success_rate*0.4 + response_time_score*0.3 + quality_score*0.3 (30s max response)
+- src/services/ai/orchestrator.py:197-208 - Performance score = success_rate*SUCCESS_RATE_WEIGHT + response_time_score*RESPONSE_TIME_WEIGHT + quality_score*QUALITY_SCORE_WEIGHT (30s max response)
 - src/services/ai/orchestrator.py:219-234 - Cost optimization uses quality/cost with defaults cost=0.01, quality=0.5
 - src/services/ai/orchestrator.py:254-266 - Fallback iterates over healthy services in insertion order
 - src/services/ai/orchestrator.py:43 - Feature flag: `fallback_enabled` defaults True
