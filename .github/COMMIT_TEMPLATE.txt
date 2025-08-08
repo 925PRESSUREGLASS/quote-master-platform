@@ -1,0 +1,46 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type should be one of the following:
+# * feat:     A new feature
+# * fix:      A bug fix
+# * docs:     Documentation only changes
+# * style:    Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+# * refactor: A code change that neither fixes a bug nor adds a feature
+# * perf:     A code change that improves performance
+# * test:     Adding missing tests or correcting existing tests
+# * chore:    Changes to the build process or auxiliary tools and libraries such as documentation generation
+# * ci:       Changes to CI configuration files and scripts
+# * build:    Changes that affect the build system or external dependencies
+
+# Scope is optional and should be the name of the npm package affected (as perceived by person reading changelog)
+# Examples: api, ui, core, auth, db, monitoring, etc.
+
+# Subject line should:
+# * use imperative, present tense: "change" not "changed" or "changes"
+# * don't capitalize first letter
+# * no period (.) at the end
+# * be 50 characters or less
+
+# Body should include the motivation for the change and contrast this with previous behavior.
+# Use imperative, present tense: "change" not "changed" or "changes"
+# Wrap at 72 characters
+
+# Footer should contain any information about Breaking Changes and is also the place to reference GitHub issues
+# Examples:
+# Closes #123
+# Fixes #456
+# Refs #789
+# BREAKING CHANGE: API endpoint /quotes now requires authentication
+
+# Examples:
+# feat(api): add quote generation endpoint
+# fix(auth): resolve token validation issue
+# docs(readme): update installation instructions
+# refactor(core): extract quote processing logic
+# perf(db): optimize quote queries with indexes
+# test(api): add integration tests for quote endpoints
+# chore(deps): update FastAPI to v0.104.1
