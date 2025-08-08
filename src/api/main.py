@@ -507,6 +507,12 @@ def setup_routes(app: FastAPI) -> None:
             "requests_per_second": 125.5,
             "error_rate": 0.008
         }
+    
+    # Simple test endpoint to verify registration
+    @app.get("/test", tags=["Test"])
+    async def test_endpoint():
+        """Simple test endpoint."""
+        return {"message": "Test endpoint working", "success": True}
 
 
 def setup_exception_handlers(app: FastAPI) -> None:
