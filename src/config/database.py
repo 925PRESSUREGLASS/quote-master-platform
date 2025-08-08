@@ -2,13 +2,13 @@
 Database configuration and session management for Quote Master Pro
 """
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
+import logging
 from contextlib import asynccontextmanager
 from typing import Generator
-import logging
+
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from src.config.settings import get_settings
 
@@ -19,8 +19,10 @@ settings = get_settings()
 engine = create_engine(
     settings.DATABASE_URL,
     poolclass=StaticPool if settings.DATABASE_URL.startswith("sqlite") else None,
-    connect_args={"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {},
-    echo=settings.DEBUG
+    connect_args={"check_same_thread": False}
+    if settings.DATABASE_URL.startswith("sqlite")
+    else {},
+    echo=settings.DEBUG,
 )
 
 # Session factory
@@ -31,6 +33,7 @@ Base = declarative_base()
 
 # Metadata for migrations
 metadata = MetaData()
+
 
 def get_db_session() -> Generator[Session, None, None]:
     """
@@ -45,6 +48,7 @@ def get_db_session() -> Generator[Session, None, None]:
         raise
     finally:
         db.close()
+
 
 @asynccontextmanager
 async def get_async_db_session():
@@ -61,26 +65,28 @@ async def get_async_db_session():
     finally:
         db.close()
 
+
 async def init_db():
     """
     Initialize database and create tables
     """
     try:
         logger.info("Initializing database...")
-        
+
         # Import all models to ensure they're registered
-        from src.models.user import User
-        from src.models.quote import Quote
-        from src.models.voice_recording import VoiceRecording
         from src.models.analytics import AnalyticsEvent
-        
+        from src.models.quote import Quote
+        from src.models.user import User
+        from src.models.voice_recording import VoiceRecording
+
         # Create all tables
         Base.metadata.create_all(bind=engine)
         logger.info("Database initialized successfully")
-        
+
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
         raise
+
 
 async def close_db():
     """
@@ -91,6 +97,7 @@ async def close_db():
         logger.info("Database connections closed")
     except Exception as e:
         logger.error(f"Error closing database: {e}")
+
 
 def test_db_connection() -> bool:
     """

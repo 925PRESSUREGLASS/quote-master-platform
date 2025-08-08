@@ -1,64 +1,50 @@
-# Prometheus Configuration for OTLP Collector Integration
 global:
-  scrape_interval: 15s  # More frequent scraping for better resolution
+  scrape_interval: 15s
   evaluation_interval: 15s
 
 rule_files:
-  - "alerts.yml"  # Include alert rules
+  # - "first_rules.yml"
+  # - "second_rules.yml"
 
 scrape_configs:
-  # Scrape the OTEL Collector metrics
-  - job_name: 'otel-collector'
-    static_configs:
-      - targets: ['otel-collector:8888']
-    scrape_interval: 30s
-
-  # Scrape metrics exposed by the collector's prometheus exporter
-  - job_name: 'quote-master-metrics'
-    static_configs:
-      - targets: ['otel-collector:8889']
-    scrape_interval: 15s
-
-  # Scrape Prometheus itself
+  # Prometheus itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  # Quote Master Pro API (via host network or direct)
+  # Quote Master Pro API
   - job_name: 'quote-master-api'
     static_configs:
-      - targets: ['host.docker.internal:8000']
+      - targets: ['api:8000']
     metrics_path: '/metrics'
-    scrape_interval: 10s
-    scrape_timeout: 5s
-
-  # Enhanced health checks
-  - job_name: 'quote-master-health'
-    static_configs:
-      - targets: ['host.docker.internal:8000']
-    metrics_path: '/health'
     scrape_interval: 30s
 
-  # Redis metrics (if Redis exporter is added)
+  # PostgreSQL
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['db:5432']
+    scrape_interval: 30s
+
+  # Redis
   - job_name: 'redis'
     static_configs:
       - targets: ['redis:6379']
     scrape_interval: 30s
 
-  # System metrics (if node exporter is added)
+  # Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:80']
+    scrape_interval: 30s
+
+  # Node Exporter (if added)
   - job_name: 'node-exporter'
     static_configs:
       - targets: ['node-exporter:9100']
-    scrape_interval: 15s
-
-  # Jaeger metrics
-  - job_name: 'jaeger'
-    static_configs:
-      - targets: ['jaeger:14269']
     scrape_interval: 30s
 
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          # - alertmanager:9093  # Uncomment when alertmanager is configured
+          # - alertmanager:9093

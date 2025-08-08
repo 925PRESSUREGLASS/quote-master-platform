@@ -1,13 +1,12 @@
 """Database configuration and session management."""
 
-from typing import Generator, Optional
 import logging
+from typing import Generator, Optional
 
-from sqlalchemy import create_engine, MetaData, event, text, inspect
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import Pool
+from sqlalchemy import MetaData, create_engine, event, inspect, text
 from sqlalchemy.exc import DisconnectionError
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.pool import Pool
 
 from .config import get_settings
 
@@ -36,11 +35,7 @@ else:
     )
 
 # Session factory
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base class for models
 Base = declarative_base()
@@ -72,11 +67,11 @@ def init_db() -> None:
     try:
         # Import all models to register them
         import src.models  # noqa - import models to register them
-        
+
         # Create tables only if they don't exist
         Base.metadata.create_all(bind=engine, checkfirst=True)
         logger.info("Database tables created successfully")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise
@@ -95,12 +90,12 @@ def check_db_health() -> bool:
 
 class DatabaseManager:
     """Database management utilities."""
-    
+
     @staticmethod
     def create_session() -> Session:
         """Create a new database session."""
         return SessionLocal()
-    
+
     @staticmethod
     def close_session(session: Session) -> None:
         """Safely close a database session."""
@@ -108,7 +103,7 @@ class DatabaseManager:
             session.close()
         except Exception as e:
             logger.error(f"Error closing session: {e}")
-    
+
     @staticmethod
     def rollback_session(session: Session) -> None:
         """Safely rollback a database session."""
@@ -116,7 +111,7 @@ class DatabaseManager:
             session.rollback()
         except Exception as e:
             logger.error(f"Error rolling back session: {e}")
-    
+
     @staticmethod
     def commit_session(session: Session) -> bool:
         """Safely commit a database session."""
@@ -157,14 +152,14 @@ def ping_connection(dbapi_connection, connection_record, connection_proxy):
 # Transaction context manager
 class TransactionManager:
     """Context manager for database transactions."""
-    
+
     def __init__(self, session: Optional[Session] = None):
         self.session = session or SessionLocal()
         self.should_close = session is None
-    
+
     def __enter__(self) -> Session:
         return self.session
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
             self.session.rollback()
@@ -174,7 +169,7 @@ class TransactionManager:
             except Exception:
                 self.session.rollback()
                 raise
-        
+
         if self.should_close:
             self.session.close()
 
@@ -182,20 +177,20 @@ class TransactionManager:
 # Database utilities
 class DatabaseUtils:
     """Database utility functions."""
-    
+
     @staticmethod
     def execute_raw_sql(query: str, params: Optional[dict] = None):
         """Execute raw SQL query."""
         with engine.connect() as connection:
             result = connection.execute(text(query), params or {})
             return result.fetchall()
-    
+
     @staticmethod
     def table_exists(table_name: str) -> bool:
         """Check if table exists in database."""
         inspector = inspect(engine)
         return table_name in inspector.get_table_names()
-    
+
     @staticmethod
     def get_table_columns(table_name: str) -> list:
         """Get table column information."""

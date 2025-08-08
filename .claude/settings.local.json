@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(make:*)",
+      "Bash(timeout 10 python -m uvicorn:*)"
+    ],
+    "deny": []
+  }
+}
