@@ -1,0 +1,118 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Quote Master Pro - AI Service Metrics",
+    "tags": ["quote-master", "ai", "service"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "AI Provider Success Rates",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (provider) (rate(ai_requests_successful{provider=~\".*\"}[5m])) / sum by (provider) (rate(ai_requests_total{provider=~\".*\"}[5m]))",
+            "legendFormat": "{{provider}} Success Rate"
+          }
+        ],
+        "yAxes": [
+          {
+            "max": 1,
+            "min": 0,
+            "unit": "percentunit"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "AI Response Times by Provider",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (provider, le) (rate(ai_response_time_bucket{provider=~\".*\"}[5m])))",
+            "legendFormat": "{{provider}} - 95th percentile"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "s"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Token Usage by Provider",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (provider) (rate(ai_tokens_used{provider=~\".*\"}[5m]))",
+            "legendFormat": "{{provider}} Tokens/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 4,
+        "title": "AI Cost Tracking",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(ai_cost_total[1h]))",
+            "legendFormat": "Cost/hour"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        }
+      },
+      {
+        "id": 5,
+        "title": "Circuit Breaker Status",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "ai_circuit_breaker_state",
+            "legendFormat": "{{provider}}"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 16
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}

@@ -1,0 +1,83 @@
+groups:
+  - name: quote_master_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{job="quote-master-api",status_code=~"5.*"}[5m])) / sum(rate(http_requests_total{job="quote-master-api"}[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="quote-master-api"}[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s"
+
+      - alert: APIDown
+        expr: up{job="quote-master-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Quote Master Pro API is down"
+          description: "The API has been down for more than 1 minute"
+
+      - alert: AIServiceHighFailureRate
+        expr: sum(rate(ai_requests_failed[5m])) / sum(rate(ai_requests_total[5m])) > 0.10
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI service high failure rate"
+          description: "AI service failure rate is {{ $value | humanizePercentage }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 80%"
+
+      - alert: DatabaseConnectionFailure
+        expr: db_connections_failed_total > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection failures detected"
+          description: "{{ $value }} database connection failures in the last minute"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache service is unavailable"
+
+      - alert: AITokenUsageSpike
+        expr: rate(ai_tokens_used[5m]) > 1000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual AI token usage spike"
+          description: "Token usage rate is {{ $value }}/sec, which is unusually high"
+
+      - alert: CacheHitRateLow
+        expr: cache_hit_ratio < 0.7
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low cache hit ratio"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }}, below optimal threshold"
