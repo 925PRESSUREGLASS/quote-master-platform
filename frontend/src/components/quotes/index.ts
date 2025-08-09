@@ -11,6 +11,7 @@ export { PerthSuburbSelector } from './PerthSuburbSelector';
 export { PricingBreakdown } from './PricingBreakdown';
 export { QuoteActions } from './QuoteActions';
 export { QuoteCalculator } from './QuoteCalculator';
+export { ServiceTypeSelector } from './ServiceTypeSelector';
 
 // Type exports
 export type { QuoteData } from './QuoteCalculator';

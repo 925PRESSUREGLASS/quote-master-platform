@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calculator, DollarSign } from 'lucide-react';
 import { PerthSuburbSelector } from './PerthSuburbSelector';
+import { ServiceTypeSelector, ServiceOption } from './ServiceTypeSelector';
 import suburbs from '@/data/perth-suburbs.json';
 
 interface QuoteCalculatorProps {
@@ -57,7 +58,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({
     onSubmit(quoteData);
   };
 
-  const services = [
+  const services: ServiceOption[] = [
     { id: 'residential', name: 'Residential Glass', basePrice: 150 },
     { id: 'commercial', name: 'Commercial Glazing', basePrice: 250 },
     { id: 'emergency', name: 'Emergency Service', basePrice: 350 },
@@ -66,20 +67,9 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({
     { id: 'windows', name: 'Window Repairs', basePrice: 160 }
   ];
 
-  const handleServiceToggle = (serviceId: string) => {
-    setSelectedServices(prev => {
-      const newServices = prev.includes(serviceId)
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId];
-      
-      // Update base price
-      const newBasePrice = services
-        .filter(service => newServices.includes(service.id))
-        .reduce((sum, service) => sum + service.basePrice, 0);
-      
-      setBasePrice(newBasePrice);
-      return newServices;
-    });
+  const handleServiceChange = (servicesSelected: string[], price: number) => {
+    setSelectedServices(servicesSelected);
+    setBasePrice(price);
   };
 
   return (
@@ -110,26 +100,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({
         {/* Services Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Services</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {services.map(service => (
-              <div
-                key={service.id}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                  selectedServices.includes(service.id)
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'bg-white border-gray-200 hover:border-blue-200'
-                }`}
-                onClick={() => handleServiceToggle(service.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">{service.name}</span>
-                  <span className="text-sm text-gray-600">
-                    ${service.basePrice}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ServiceTypeSelector services={services} onChange={handleServiceChange} />
         </div>
 
         {/* Additional Notes */}
