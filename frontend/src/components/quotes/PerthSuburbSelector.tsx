@@ -101,7 +101,7 @@ export const PerthSuburbSelector: React.FC<PerthSuburbSelectorProps> = ({
                 <button
                   id="suburb-selector"
                   type="button"
-                  aria-haspopup="listbox"
+                  aria-haspopup="true"
                   aria-expanded={isOpen}
                   aria-controls="suburb-options"
                   onClick={() => setIsOpen(!isOpen)}
