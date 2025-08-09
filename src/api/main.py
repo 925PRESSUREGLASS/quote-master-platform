@@ -14,7 +14,16 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
 from src.api.middleware.telemetry import setup_comprehensive_instrumentation
-from src.api.routers import admin, analytics, auth, quotes, service_quotes, users, voice
+from src.api.routers import (
+    admin,
+    analytics,
+    auth,
+    quotes,
+    service_quotes,
+    simple_quotes,
+    users,
+    voice,
+)
 
 # Import enhanced quotes router
 from src.api.routers.enhanced_quotes import router as enhanced_quotes_router
@@ -275,6 +284,8 @@ def setup_routes(app: FastAPI) -> None:
     app.include_router(quotes.router, prefix="/api/v1/quotes", tags=["Quotes"])
 
     app.include_router(service_quotes.router, prefix="/api/v1", tags=["Service Quotes"])
+
+    app.include_router(simple_quotes.router, tags=["Simple Quotes"])
 
     app.include_router(voice.router, prefix="/api/v1/voice", tags=["Voice Processing"])
 

@@ -8,13 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from src.core.config import get_settings
 
-from .base import (
-    AIRequest,
-    AIResponse,
-    AIServiceBase,
-    AIServiceError,
-    AITaskType,
-)
+from .base import AIRequest, AIResponse, AIServiceBase, AIServiceError, AITaskType
 from .claude import ClaudeService
 from .codex import CodexService
 from .openai import OpenAIService

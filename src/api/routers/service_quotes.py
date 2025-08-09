@@ -275,3 +275,46 @@ async def get_quote_statuses():
         {"value": item.value, "label": item.value.replace("_", " ").title()}
         for item in QuoteStatus
     ]
+
+
+# Simple public endpoint for testing
+@router.post("/service-quotes/simple-calculate")
+async def simple_calculate_quote(
+    suburb: str, address: str, services: List[str], base_price: float, multiplier: float
+):
+    """Simple quote calculation without authentication (for testing)"""
+    try:
+        adjusted_price = base_price * multiplier
+        quote_id = f"SQ-{datetime.now().strftime('%Y%m%d')}-{hash(f'{suburb}-{address}') % 10000:04d}"
+
+        service_names = {
+            "residential": "Residential Glass Repair",
+            "commercial": "Commercial Glazing Services",
+            "emergency": "Emergency Glass Repair",
+            "shower": "Shower Screen Installation/Repair",
+            "mirrors": "Mirror Installation/Repair",
+            "windows": "Window Cleaning/Repair",
+        }
+
+        selected_service_names = [service_names.get(svc, svc) for svc in services]
+
+        return {
+            "quote_id": quote_id,
+            "suburb": suburb,
+            "address": address,
+            "services": services,
+            "service_names": selected_service_names,
+            "base_price": base_price,
+            "adjusted_price": adjusted_price,
+            "multiplier": multiplier,
+            "ai_quote": f"Professional {', '.join(selected_service_names)} service for your property in {suburb}. Our experienced team will provide quality service with attention to detail.",
+            "recommendation": f"Based on your location in {suburb}, we recommend our comprehensive service package for optimal results.",
+            "estimated_duration": "2-4 hours depending on scope of work",
+            "created_at": datetime.utcnow().isoformat(),
+            "status": "draft",
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate service quote: {str(e)}"
+        )

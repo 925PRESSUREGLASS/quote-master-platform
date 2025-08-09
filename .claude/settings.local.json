@@ -5,7 +5,21 @@
       "Bash(make:*)",
       "Bash(timeout 10 python -m uvicorn:*)",
       "Bash(find:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(gh pr view:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(curl:*)",
+      "Bash(timeout 15 npm run dev)",
+      "Bash(npm run dev:*)",
+      "Bash(echo)",
+      "Bash(pkill:*)",
+      "Bash(chmod:*)",
+      "Bash(cp:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": []
   }

@@ -5,6 +5,7 @@
 
 export { ServiceQuoteCalculator } from './ServiceQuoteCalculator';
 export { ServiceSelectionForm } from './ServiceSelectionForm';
+export { ServiceTypeSelector } from './ServiceTypeSelector';
 export { PropertyDetailsForm } from './PropertyDetailsForm';
 export { CustomerDetailsForm } from './CustomerDetailsForm';
 export { PerthSuburbSelector } from './PerthSuburbSelector';
@@ -16,3 +17,4 @@ export { ServiceTypeSelector } from './ServiceTypeSelector';
 // Type exports
 export type { QuoteData } from './QuoteCalculator';
 export type { SuburbInfo } from './PerthSuburbSelector';
+export type { ServiceType } from './ServiceTypeSelector';

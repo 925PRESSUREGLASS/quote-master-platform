@@ -4,25 +4,26 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// import { Button } from '@/components/ui/button';
+// import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Calculator, MapPin, Building, Wrench } from 'lucide-react';
 import { CustomerDetailsForm } from './CustomerDetailsForm';
 import { ServiceSelectionForm } from './ServiceSelectionForm';
 import { PropertyDetailsForm } from './PropertyDetailsForm';
-import { PerthSuburbSelector } from './PerthSuburbSelector';
+import { PerthSuburbSelector, SuburbInfo } from './PerthSuburbSelector';
 import { PricingBreakdown } from './PricingBreakdown';
 import { QuoteActions } from './QuoteActions';
 import { quoteService } from '@/services/quotes';
-import { 
-  ServiceQuoteRequest, 
-  ServiceQuoteCalculation, 
-  ServiceQuote, 
-  ServiceType, 
-  PropertyType, 
+import suburbsData from '@/data/perth-suburbs.json';
+import {
+  ServiceQuoteRequest,
+  ServiceQuoteCalculation,
+  ServiceQuote,
+  ServiceType,
+  PropertyType,
   ServiceFrequency,
-  ContactPreference 
+  ContactPreference
 } from '@/types';
 
 interface ServiceQuoteCalculatorProps {
@@ -61,22 +62,14 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
   const [isCreatingQuote, setIsCreatingQuote] = useState(false);
   const [calculatedQuote, setCalculatedQuote] = useState<ServiceQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [suburbs, setSuburbs] = useState<Array<{ name: string; zone: string; base_rate_multiplier: number }>>([]);
+  const [suburbs] = useState<SuburbInfo[]>(suburbsData.suburbs);
 
-  // Load reference data
+  // Initialize with default data if needed
   useEffect(() => {
-    const loadReferenceData = async () => {
-      try {
-        const suburbsData = await quoteService.getSuburbs();
-        setSuburbs(suburbsData);
-      } catch (error) {
-        console.error('Failed to load reference data:', error);
-        setError('Failed to load suburb data. Please refresh and try again.');
-      }
-    };
-
-    loadReferenceData();
-  }, []);
+    if (initialData) {
+      setFormData(prev => ({ ...prev, ...initialData }));
+    }
+  }, [initialData]);
 
   // Auto-calculate quote when key fields change
   useEffect(() => {
@@ -141,7 +134,7 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
     try {
       const createdQuote = await quoteService.createServiceQuote(formData);
       onQuoteCreated?.(createdQuote);
-      
+
       // Reset form or show success message
       setCalculatedQuote(null);
       setCurrentStep(1);
@@ -183,21 +176,21 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
           const Icon = step.icon;
           const isActive = currentStep === step.number;
           const isCompleted = currentStep > step.number;
-          
+
           return (
             <React.Fragment key={step.number}>
               <div className="flex flex-col items-center">
                 <div className={`
                   w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors
-                  ${isActive ? 'bg-blue-600 border-blue-600 text-white' : 
-                    isCompleted ? 'bg-green-600 border-green-600 text-white' : 
+                  ${isActive ? 'bg-blue-600 border-blue-600 text-white' :
+                    isCompleted ? 'bg-green-600 border-green-600 text-white' :
                     'bg-gray-100 border-gray-300 text-gray-500'}
                 `}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className={`mt-2 text-sm font-medium ${
-                  isActive ? 'text-blue-600' : 
-                  isCompleted ? 'text-green-600' : 
+                  isActive ? 'text-blue-600' :
+                  isCompleted ? 'text-green-600' :
                   'text-gray-500'
                 }`}>
                   {step.title}
@@ -274,7 +267,7 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
             Get an instant quote for professional window and pressure cleaning services in Perth, WA
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           {error && (
             <Alert className="mb-6 border-red-200 bg-red-50">
@@ -290,7 +283,7 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
             {/* Form Section */}
             <div className="lg:col-span-2">
               {renderStepContent()}
-              
+
               {/* Navigation Buttons */}
               {mode === 'full-form' && (
                 <div className="flex justify-between mt-8">
@@ -301,7 +294,7 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
                   >
                     Previous
                   </Button>
-                  
+
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -317,7 +310,7 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
                         'Calculate Quote'
                       )}
                     </Button>
-                    
+
                     {currentStep < 4 ? (
                       <Button onClick={nextStep}>
                         Next
@@ -347,7 +340,7 @@ export const ServiceQuoteCalculator: React.FC<ServiceQuoteCalculatorProps> = ({
               {calculatedQuote ? (
                 <>
                   <PricingBreakdown quote={calculatedQuote} />
-                  <QuoteActions 
+                  <QuoteActions
                     quote={calculatedQuote}
                     onRecalculate={handleCalculateQuote}
                     className="mt-4"

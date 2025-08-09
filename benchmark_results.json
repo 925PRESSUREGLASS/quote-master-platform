@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-08-09T10:22:41.117371",
+  "system_info": {
+    "cpu_count": 8,
+    "memory_total_gb": 15.91,
+    "python_version": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]"
+  },
+  "results": [
+    {
+      "test_name": "Pricing Service",
+      "total_requests": 1000,
+      "successful_requests": 1000,
+      "failed_requests": 0,
+      "total_time": 0.012,
+      "avg_response_time_ms": 0.01,
+      "min_response_time_ms": 0.0,
+      "max_response_time_ms": 0.5,
+      "requests_per_second": 86952.01,
+      "p95_response_time_ms": 0.0,
+      "p99_response_time_ms": 0.5,
+      "error_rate_percent": 0.0
+    }
+  ]
+}
