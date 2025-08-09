@@ -68,10 +68,15 @@ export const PerthSuburbSelector: React.FC<PerthSuburbSelectorProps> = ({
         {/* Address Input */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="property-address"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Property Address
             </label>
             <input
+              id="property-address"
+              name="address"
               type="text"
               value={address}
               onChange={(e) => onChange(selectedSuburb, e.target.value)}
@@ -84,20 +89,27 @@ export const PerthSuburbSelector: React.FC<PerthSuburbSelectorProps> = ({
           </div>
 
           {/* Suburb Selector */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Perth Suburb
-            </label>
-            
             <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white flex items-center justify-between"
+              <label
+                htmlFor="suburb-selector"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
-                <span className={selectedSuburb ? 'text-gray-900' : 'text-gray-500'}>
-                  {selectedSuburb || 'Select a suburb...'}
-                </span>
+                Perth Suburb
+              </label>
+
+              <div className="relative">
+                <button
+                  id="suburb-selector"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isOpen}
+                  aria-controls="suburb-options"
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white flex items-center justify-between"
+                >
+                  <span className={selectedSuburb ? 'text-gray-900' : 'text-gray-500'}>
+                    {selectedSuburb || 'Select a suburb...'}
+                  </span>
                 <svg
                   className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                   fill="none"
@@ -114,19 +126,25 @@ export const PerthSuburbSelector: React.FC<PerthSuburbSelectorProps> = ({
                   <div className="p-3 border-b border-gray-200">
                     <div className="relative">
                       <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search suburbs..."
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        autoFocus
-                      />
+                        <input
+                          id="suburb-search"
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          placeholder="Search suburbs..."
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          autoFocus
+                          aria-label="Search suburbs"
+                        />
+                      </div>
                     </div>
-                  </div>
 
                   {/* Suburbs List */}
-                  <div className="max-h-60 overflow-y-auto">
+                  <div
+                    id="suburb-options"
+                    role="listbox"
+                    className="max-h-60 overflow-y-auto"
+                  >
                     {filteredSuburbs.length > 0 ? (
                       filteredSuburbs.map((suburb) => {
                         const priceInfo = getPriceIndicator(suburb.base_rate_multiplier);
@@ -134,6 +152,8 @@ export const PerthSuburbSelector: React.FC<PerthSuburbSelectorProps> = ({
                           <button
                             key={suburb.name}
                             type="button"
+                            role="option"
+                            aria-selected={selectedSuburb === suburb.name}
                             onClick={() => handleSuburbSelect(suburb)}
                             className="w-full px-3 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center justify-between"
                           >
