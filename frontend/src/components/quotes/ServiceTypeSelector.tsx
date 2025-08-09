@@ -26,9 +26,8 @@ export const ServiceTypeSelector: React.FC<ServiceTypeSelectorProps> = ({
       .reduce((sum, service) => sum + service.basePrice, 0);
     onChange?.(initialSelected, initialPrice);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   }, [services, initialSelected, onChange]);
+
   const toggleService = (id: string) => {
     setSelected(prev => {
       const updated = prev.includes(id)
@@ -63,4 +62,3 @@ export const ServiceTypeSelector: React.FC<ServiceTypeSelectorProps> = ({
     </div>
   );
 };
-
