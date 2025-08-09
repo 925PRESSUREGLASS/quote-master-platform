@@ -28,6 +28,7 @@ export const ServiceTypeSelector: React.FC<ServiceTypeSelectorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  }, [services, initialSelected, onChange]);
   const toggleService = (id: string) => {
     setSelected(prev => {
       const updated = prev.includes(id)
